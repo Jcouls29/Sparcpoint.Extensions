@@ -9,6 +9,16 @@ using System.Threading.Tasks;
 
 namespace Sparcpoint.Extensions.Azure.ServiceBus.Internal
 {
+    internal class CreateTopicIfNotExistsPublisher<T> : IPublisher<T>
+    {
+
+
+        public Task PublishAsync(T message, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal class ServiceBusPublisher<T> : IPublisher<T>
         where T : class, new()
     {
