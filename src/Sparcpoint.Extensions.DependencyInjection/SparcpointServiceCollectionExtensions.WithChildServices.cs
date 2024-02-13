@@ -31,7 +31,7 @@ public static partial class SparcpointServiceCollectionExtensions
                 //       scope instead
                 foreach (var service in services.Reverse())
                 {
-                    childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetService(service.ServiceType), ServiceLifetime.Transient));
+                    childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetRequiredService(service.ServiceType), ServiceLifetime.Transient));
                 }
 
                 configure(childServices);

@@ -72,6 +72,7 @@ public class ServiceCollectionExtensions_DecorateClosed
             s.Decorate<IInterface, DecoratedInstance>();
         });
 
+        Assert.NotNull(instance);
         Assert.Equal(2, instance.Count());
         Assert.All(instance, x => Assert.IsType<DecoratedInstance>(x));
         Assert.Contains(instance, x => Assert.IsType<DecoratedInstance>(x).InnerService is Instance);
@@ -167,6 +168,7 @@ public class ServiceCollectionExtensions_DecorateClosed
             s.Decorate<IInterface, DecoratedInstance>();
         });
 
+        Assert.NotNull(instances);
         foreach(var instance in instances)
         {
             Assert.IsType<DecoratedInstance>(instance);
