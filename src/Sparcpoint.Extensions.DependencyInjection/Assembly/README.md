@@ -6,12 +6,12 @@ Decoration and child service extensions for `Microsoft.Extensions.DependencyInje
 
 ### Package Manager Console
 ```
-Install-Package Sparcpoint.Extensions
+Install-Package Sparcpoint.Extensions.DependencyInjection
 ```
 
 ### .NET Core CLI
 ```
-dotnet add package Sparcpoint.Extensions
+dotnet add package Sparcpoint.Extensions.DependencyInjection
 ```
 
 ## Usage
