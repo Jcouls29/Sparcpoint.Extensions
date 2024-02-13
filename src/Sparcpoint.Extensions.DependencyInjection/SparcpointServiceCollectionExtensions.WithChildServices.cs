@@ -2,13 +2,19 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class SparcpointServiceCollectionExtensions
+public static partial class SparcpointServiceCollectionExtensions
 {
     public static IServiceCollection WithChildServices<TService>(this IServiceCollection services, Action<IServiceCollection> configure, ServiceLifetime lifetime = ServiceLifetime.Singleton) where TService : class
         => WithChildServices<TService, TService>(services, configure, lifetime);
 
-    public static IServiceCollection WithChildServices<TService, TImplementation>(this IServiceCollection services, Action<IServiceCollection> configure, ServiceLifetime lifetime = ServiceLifetime.Singleton) where TImplementation : class
+    public static IServiceCollection WithChildServices<TService, TImplementation>(this IServiceCollection services, Action<IServiceCollection> configure, ServiceLifetime lifetime = ServiceLifetime.Singleton) where TImplementation : TService
+        => WithChildServices(services, typeof(TService), typeof(TImplementation), configure, lifetime);
+
+    public static IServiceCollection WithChildServices(this IServiceCollection services, Type serviceType, Type implementationType, Action<IServiceCollection> configure, ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        if (serviceType.IsGenericTypeDefinition)
+            throw new InvalidOperationException("Open generics are not supported.");
+
         bool hasBeenRouted = false;
 
         // NOTE: This approach allows for many nested coalesced providers.
@@ -17,14 +23,14 @@ public static class SparcpointServiceCollectionExtensions
         configure(childServices);
         OwnedProvider childProvider = new OwnedProvider();
 
-        Func<IServiceProvider, TImplementation> factory = (IServiceProvider provider) =>
+        Func<IServiceProvider, object> factory = (IServiceProvider provider) =>
         {
             if (!hasBeenRouted)
             {
                 // NOTE: Creates a route to the original registration
                 //       Uses transient scope to defer to the parent's
                 //       scope instead
-                foreach(var service in services.Reverse())
+                foreach (var service in services.Reverse())
                 {
                     childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetService(service.ServiceType), ServiceLifetime.Transient));
                 }
@@ -40,17 +46,25 @@ public static class SparcpointServiceCollectionExtensions
             if (childProvider.IsDisposed)
                 throw new InvalidOperationException("Child provider has been disposed.");
 
-            var coalescedProvider = new CoalescedServiceProvider(childProvider, provider);
-            return ActivatorUtilities.CreateInstance<TImplementation>(coalescedProvider);
+            IServiceProvider coalescedProvider;
+            coalescedProvider = new CoalescedServiceProvider(childProvider, provider);
+
+            return ActivatorUtilities.CreateInstance(coalescedProvider, implementationType);
         };
-        services.Add(new ServiceDescriptor(typeof(TService), factory, lifetime));
+        services.Add(new ServiceDescriptor(serviceType, factory, lifetime));
 
         // NOTE: The provider is added to the collection to allow
         //       for the lifetime to be handled by the host (i.e. ASP.NET Core)
         // NOTE: The factory is required to ensure it gets disposed.
         //       Using the instance directly won't dispose at the end of the parent's life.
-        services.AddSingleton(p => childProvider);
         
+        services.AddSingleton(p => childProvider);
+
         return services;
+    }
+
+    private static bool DoesImplementGenericInterface(Type serviceType, Type implementationType)
+    {
+        return implementationType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == serviceType);
     }
 }

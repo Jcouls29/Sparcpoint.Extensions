@@ -12,7 +12,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void Parent_services_use_different_instances()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.WithChildServices<ParentService>(child =>
             {
@@ -38,7 +38,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void Child_services_cannot_be_provided_from_parent_provider()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.WithChildServices<ParentService>(child => child.AddSingleton(new ChildService("C")));
         });
@@ -55,7 +55,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void Given_child_service_is_singleton_they_are_the_same_instances()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.WithChildServices<ParentService>(child => child.AddSingleton<ChildService>(), lifetime: ServiceLifetime.Transient);
         });
@@ -76,7 +76,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void Given_child_service_is_transient_they_are_not_the_same_instances()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.WithChildServices<ParentService>(child => child.AddTransient<ChildService>(), lifetime: ServiceLifetime.Transient);
         });
@@ -98,7 +98,7 @@ public class ServiceCollectionExtensions_ChildServices
     {
         OwnedProvider _ownedProvider;
 
-        using (var provider = BuildProvider((services) =>
+        using (var provider = Build((services) =>
         {
             services.WithChildServices<ParentService>(child => child.AddTransient<ChildService>(), lifetime: ServiceLifetime.Transient);
         }))
@@ -118,7 +118,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void When_child_provider_missing_service_pulls_from_parent()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.AddSingleton<ChildService>();
             services.WithChildServices<GrandParentService>(child => child.AddSingleton<ParentService>());
@@ -136,7 +136,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void When_child_and_parent_provide_child_instance_is_used()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.AddSingleton<ChildService>();
             services.WithChildServices<GrandParentService>(child => child.AddSingleton<ParentService>().AddSingleton<ChildService>());
@@ -154,7 +154,7 @@ public class ServiceCollectionExtensions_ChildServices
     [Fact]
     public void When_implementation_is_not_service_it_provides()
     {
-        using var provider = BuildProvider((services) =>
+        using var provider = Build((services) =>
         {
             services.WithChildServices<IParent, ParentService>(child => child.AddSingleton<ChildService>());
         });
@@ -164,7 +164,7 @@ public class ServiceCollectionExtensions_ChildServices
         Assert.NotNull(parent.Child);
     }
 
-    private ServiceProvider BuildProvider(Action<IServiceCollection> configure)
+    private ServiceProvider Build(Action<IServiceCollection> configure)
     {
         var services = new ServiceCollection();
         configure(services);
@@ -190,6 +190,33 @@ public class ServiceCollectionExtensions_ChildServices
     {
         ChildService Child { get; }
     }
+
+    public interface IParent<T>
+    {
+        IChild<T> Child { get; }
+    }
+    public class OpenParent<T> : IParent<T>
+    {
+        public OpenParent(IChild<T> child)
+        {
+            Child = child;
+        }
+
+        public IChild<T> Child { get; }
+    }
+
+    public class DecoratedParent<T> : IParent<T>
+    {
+        public DecoratedParent(IParent<T> parent)
+        {
+            Child = parent.Child;
+        }
+
+        public IChild<T> Child { get; }
+    }
+
+    public interface IChild<T> { }
+    public class OpenChild<T> : IChild<T> { }
 }
 
 
