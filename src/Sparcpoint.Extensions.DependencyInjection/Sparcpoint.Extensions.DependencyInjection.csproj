@@ -12,7 +12,7 @@
     <Description>Decoration and child service extensions for Microsoft.Extensions.DependencyInjection</Description>
     <Copyright>(c) 2024 Sparcpoint, LLC</Copyright>
     <PackageProjectUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</PackageProjectUrl>
-    <PackageReadmeFile>Assembly/README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.DependencyInjection</PackageTags>
@@ -21,7 +21,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>Assembly/SPARC_128x128.png</PackageIcon>
+    <PackageIcon>SPARC_128x128.png</PackageIcon>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
