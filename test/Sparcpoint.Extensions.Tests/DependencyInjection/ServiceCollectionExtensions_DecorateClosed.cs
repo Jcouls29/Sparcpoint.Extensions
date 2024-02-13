@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 using Microsoft.Extensions.DependencyInjection;
+using static Sparcpoint.Extensions.Tests.ServiceCollectionExtensions_DecorateOpen;
 
 namespace Sparcpoint.Extensions.Tests;
 
@@ -186,6 +187,12 @@ public class ServiceCollectionExtensions_DecorateClosed
 
         var instance2 = Assert.IsType<Service2>(instance);
         Assert.IsType<Service>(instance2.InnerService);
+    }
+
+    [Fact]
+    public void Decorating_non_registered_service_throws()
+    {
+        Assert.Throws<MissingTypeRegistrationException>(() => Build(s => s.Decorate<IInterface, DecoratedInstance>()));
     }
 
     private T? Build<T>(Action<IServiceCollection> configure)

@@ -42,10 +42,16 @@ public static partial class SparcpointServiceCollectionExtensions
 
     public static IServiceCollection Decorate(this IServiceCollection services, Type serviceType, Type decoratorType)
     {
+        bool decorated;
         if (serviceType.IsGenericTypeDefinition)
-            return DecorateOpen(services, serviceType, decoratorType);
+            decorated = TryDecorateOpen(services, serviceType, decoratorType);
         else
-            return DecorateClosed(services, serviceType, decoratorType);
+            decorated = TryDecorateClosed(services, serviceType, decoratorType);
+
+        if (!decorated)
+            throw new MissingTypeRegistrationException(serviceType);
+
+        return services;
     }
 
     public static ServiceDescriptor WithImplementationFactory(this ServiceDescriptor descriptor, Func<IServiceProvider, object> implementationFactory) 
@@ -59,8 +65,9 @@ public static partial class SparcpointServiceCollectionExtensions
         _ => throw new ArgumentException($"No implementation factory or instance or type found for {descriptor.ServiceType}.", nameof(descriptor))
     };
 
-    private static IServiceCollection DecorateClosed(IServiceCollection services, Type serviceType, Type decoratorType)
+    private static bool TryDecorateClosed(IServiceCollection services, Type serviceType, Type decoratorType)
     {
+        var decorated = false;
         for(var i = 0; i < services.Count; i++)
         {
             if (services[i].ServiceType == serviceType)
@@ -80,14 +87,17 @@ public static partial class SparcpointServiceCollectionExtensions
 
                 services.Add(descriptor.WithServiceType(decoratedTypeEx));
                 services[i] = descriptor.WithImplementationFactory(factory);
+
+                decorated = true;
             }
         }
 
-        return services;
+        return decorated;
     }
 
-    private static IServiceCollection DecorateOpen(IServiceCollection services, Type serviceType, Type decoratorType)
+    private static bool TryDecorateOpen(IServiceCollection services, Type serviceType, Type decoratorType)
     {
+        var decorated = false;
         for(var i = 0; i < services.Count; i++)
         {
             var descriptor = services[i];
@@ -110,9 +120,11 @@ public static partial class SparcpointServiceCollectionExtensions
 
             services.Add(descriptor.WithServiceType(decoratedTypeEx));
             services[i] = descriptor.WithImplementationFactory(factory);
+
+            decorated = true;
         }
 
-        return services;
+        return decorated;
     }
 
     private static bool CanDecorateOpen(Type decoratorServiceType, Type decoratorType, Type targetServiceType)

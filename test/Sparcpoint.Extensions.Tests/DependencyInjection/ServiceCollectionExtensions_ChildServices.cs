@@ -164,6 +164,50 @@ public class ServiceCollectionExtensions_ChildServices
         Assert.NotNull(parent.Child);
     }
 
+    [Fact]
+    public void Child_can_decorate_parent_provider_services()
+    {
+        var provider = Build(s =>
+        {
+            s.AddSingleton<ChildService>();
+            s.WithChildServices<IParent, ParentService>(s2 => s2.Decorate<ChildService, DecoratedChildService>());
+        });
+
+        var parent = provider.GetService<IParent>();
+        var service = Assert.IsType<ParentService>(parent);
+        var decoratedChild = Assert.IsType<DecoratedChildService>(service.Child);
+        Assert.IsType<ChildService>(decoratedChild.Child);
+    }
+
+    [Fact]
+    public void Parent_provider_service_does_not_get_decorated_when_provided_from_parent_provider()
+    {
+        var provider = Build(s =>
+        {
+            s.AddSingleton<ChildService>();
+            s.WithChildServices<IParent, ParentService>(s2 => s2.Decorate<ChildService, DecoratedChildService>());
+        });
+
+        var service = provider.GetService<ChildService>();
+        Assert.IsType<ChildService>(service);
+        Assert.IsNotType<DecoratedChildService>(service);
+    }
+
+    [Fact]
+    public void Parent_can_be_decorated()
+    {
+        var provider = Build(s =>
+        {
+            s.WithChildServices<IParent, ParentService>(child => child.AddSingleton<ChildService>());
+            s.Decorate<IParent, DecoratedParent>();
+        });
+
+        var parent = provider.GetService<IParent>();
+        var decorated = Assert.IsType<DecoratedParent>(parent);
+        var inner = Assert.IsType<ParentService>(decorated.InnerParent);
+        Assert.IsType<ChildService>(inner.Child);
+    }
+
     private ServiceProvider Build(Action<IServiceCollection> configure)
     {
         var services = new ServiceCollection();
@@ -186,6 +230,11 @@ public class ServiceCollectionExtensions_ChildServices
         public string Name { get; } = name;
     }
 
+    public class DecoratedChildService(ChildService service) : ChildService
+    {
+        public ChildService Child { get; } = service;
+    }
+
     public interface IParent
     {
         ChildService Child { get; }
@@ -205,13 +254,27 @@ public class ServiceCollectionExtensions_ChildServices
         public IChild<T> Child { get; }
     }
 
+    public class DecoratedParent : IParent
+    {
+        public DecoratedParent(IParent parent)
+        {
+            InnerParent = parent;
+            Child = parent.Child;
+        }
+
+        public IParent InnerParent { get; }
+        public ChildService Child { get; }
+    }
+
     public class DecoratedParent<T> : IParent<T>
     {
         public DecoratedParent(IParent<T> parent)
         {
+            InnerParent = parent;
             Child = parent.Child;
         }
 
+        public IParent<T> InnerParent { get; }
         public IChild<T> Child { get; }
     }
 

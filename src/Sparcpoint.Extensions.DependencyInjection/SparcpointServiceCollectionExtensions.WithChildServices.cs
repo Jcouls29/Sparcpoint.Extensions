@@ -20,7 +20,6 @@ public static partial class SparcpointServiceCollectionExtensions
         // NOTE: This approach allows for many nested coalesced providers.
         //       This should not cause any issues.
         var childServices = new ServiceCollection();
-        configure(childServices);
         OwnedProvider childProvider = new OwnedProvider();
 
         Func<IServiceProvider, object> factory = (IServiceProvider provider) =>
@@ -35,6 +34,7 @@ public static partial class SparcpointServiceCollectionExtensions
                     childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetService(service.ServiceType), ServiceLifetime.Transient));
                 }
 
+                configure(childServices);
                 childProvider = new OwnedProvider(childServices.BuildServiceProvider());
 
                 // Should only be done once!! This prevents multiple initializations
@@ -61,10 +61,5 @@ public static partial class SparcpointServiceCollectionExtensions
         services.AddSingleton(p => childProvider);
 
         return services;
-    }
-
-    private static bool DoesImplementGenericInterface(Type serviceType, Type implementationType)
-    {
-        return implementationType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == serviceType);
     }
 }

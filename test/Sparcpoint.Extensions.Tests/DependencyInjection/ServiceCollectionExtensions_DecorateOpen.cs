@@ -56,6 +56,12 @@ public class ServiceCollectionExtensions_DecorateOpen
         Assert.IsType<OpenGenericImplementation>(decorator.InnerService);
     }
 
+    [Fact]
+    public void Decorating_non_registered_open_generic_service_throws()
+    {
+        Assert.Throws<MissingTypeRegistrationException>(() => Build(s => s.Decorate(typeof(IOpenGeneric<,>), typeof(DecoratedOpenGenericInstance<,>))));
+    }
+
     private T? Build<T>(Action<IServiceCollection> configure)
     {
         var provider = Build(configure);
