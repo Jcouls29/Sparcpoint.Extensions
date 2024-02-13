@@ -38,13 +38,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assembly\README.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assembly\SPARC_128x128.png">
+    <None Include="Assembly\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Assembly\SPARC_128x128.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
