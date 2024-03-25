@@ -40,6 +40,10 @@ public static partial class SparcpointServiceCollectionExtensions
     public static IServiceCollection Decorate<TService, TDecoration>(this IServiceCollection services) where TDecoration : TService
         => Decorate(services, typeof(TService), typeof(TDecoration));
 
+    // Alias for DecorateWithChildServices
+    public static IServiceCollection Decorate<TService, TDecoration>(this IServiceCollection services, Action<IServiceCollection> configureChildServices, ServiceLifetime serviceLifetime)
+        => DecorateWithChildServices<TService, TDecoration>(services, configureChildServices, serviceLifetime);
+
     public static IServiceCollection Decorate(this IServiceCollection services, Type serviceType, Type decoratorType)
     {
         bool decorated;
