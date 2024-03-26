@@ -4,6 +4,30 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>$(AssemblyName)</Title>
+    <Version>$(VersionPrefix)</Version>
+    <Authors>Justin Coulston</Authors>
+    <Company>Sparcpoint, LLC</Company>
+    <Product>Sparcpoint Extensions</Product>
+    <Description>Permissions module for managing and checking permissions</Description>
+    <Copyright>(c) 2024 Sparcpoint, LLC</Copyright>
+    <PackageProjectUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.Permissions</PackageTags>
+    <PackageReleaseNotes>Permissions</PackageReleaseNotes>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>SPARC_128x128.png</PackageIcon>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+
+    <VersionPrefix>1.0.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

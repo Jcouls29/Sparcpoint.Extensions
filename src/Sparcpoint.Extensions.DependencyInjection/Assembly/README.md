@@ -16,10 +16,11 @@ dotnet add package Sparcpoint.Extensions.DependencyInjection
 
 ## Usage
 
-This library adds two extension methods to `IServiceCollection`
+This library adds three extension methods to `IServiceCollection`
 
 * `Decorate` - Allows usage of the decorator pattern with Microsoft DI.
 * `WithChildServices` - Allows an isolated scope of service injection for a parent service.
+* `DecorateWithChildServices` (Alias `Decorate`) - Allows usage of the decorator pattern (including child services) with Microsoft DI.
 
 ## Examples
 
@@ -153,4 +154,42 @@ var accountService = provider.GetRequiredService<DefaultAccountService>();
 
 // This will return the "default" implementation of InMemoryServiceBus
 var messageBus = provider.GetRequiredService<IMessageBus>();
+```
+
+### Decorate w/ Child Services
+
+Like above, we can also decorate while injecting child services, as necessary.
+
+> Caveat: This can only be used with a closed implementation. Open-generics are NOT supported.
+
+```csharp
+/*
+ * Basic Usage
+ */
+ServiceCollection services = new();
+
+// Add the root service
+services.AddSingleton<IService, ServiceImplementation>();
+
+// Decorate all services currently registered (w/ Child Services)
+services.DecorateWithChildServices<IService, LoggingImplementation>(child => 
+{
+  child.AddSingleton<IOtherService, OtherServiceImplementation>();
+});
+```
+
+```csharp
+/*
+ * Alternate Syntax
+ */
+ServiceCollection services = new();
+
+// Add the root service
+services.AddSingleton<IService, ServiceImplementation>();
+
+// Decorate all services currently registered (w/ Child Services)
+services.Decorate<IService, LoggingImplementation>(child => 
+{
+  child.AddSingleton<IOtherService, OtherServiceImplementation>();
+});
 ```
