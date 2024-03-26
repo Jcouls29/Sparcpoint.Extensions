@@ -25,12 +25,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sparcpoint.Extensions.DependencyInjection\Sparcpoint.Extensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Permissions\" />
   </ItemGroup>
 
 </Project>
