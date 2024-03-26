@@ -2,11 +2,16 @@
 
 namespace Sparcpoint.Extensions.Permissions;
 
-public readonly record struct ScopePath
+public readonly struct ScopePath
 {
     public string[] Segments { get; }
     public bool IsRootScope => (this == RootScope);
     public int Rank => Segments.Length;
+
+    public ScopePath()
+    {
+        Segments = Array.Empty<string>();
+    }
 
     public ScopePath(string[]? segments)
     {
@@ -54,13 +59,39 @@ public readonly record struct ScopePath
         return new ScopePath(Segments.Take(Segments.Length - numberLevels).ToArray());
     }
 
+    public override int GetHashCode()
+    {
+        int code = 0;
+
+        foreach(var s in Segments)
+            code = HashCode.Combine(code, s.GetHashCode());
+
+        return code;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        if (obj == null)
+            return false;
+
+        if (obj is ScopePath otherPath)
+        {
+            return this.Segments.SequenceEqual(otherPath.Segments);
+        }
+
+        return false;
+    }
+
     public override string ToString()
     {
         return "/" + string.Join("/", Segments ?? Array.Empty<string>());
     }
 
-    public static ScopePath Parse(string path)
+    public static ScopePath Parse(string? path)
     {
+        if (string.IsNullOrWhiteSpace(path))
+            return ScopePath.RootScope;
+
         if (!TryParse(path, out ScopePath? result))
             throw new InvalidOperationException($"Could not parse ScopePath from value '{path}'");
 
@@ -81,7 +112,7 @@ public readonly record struct ScopePath
 
         foreach(var alias in ScopePathOptions.AliasSeparators)
         {
-            normalizePath.Replace(alias, ScopePathOptions.SegmentSeparator);
+            normalizePath = normalizePath.Replace(alias, ScopePathOptions.SegmentSeparator);
         }
 
         normalizePath = normalizePath.ToLower();
@@ -104,22 +135,22 @@ public readonly record struct ScopePath
 
     public static bool operator <(ScopePath left, ScopePath right) 
     {
-        return left == right.Back();
+        return SequenceStartsWith(right.Back(), left);
     }
 
     public static bool operator >(ScopePath left, ScopePath right)
     {
-        return left.Back() == right;
+        return SequenceStartsWith(left.Back(), right);
     }
 
     public static bool operator <=(ScopePath left, ScopePath right)
     {
-        return (left == right) || (left == right.Back());
+        return SequenceStartsWith(right, left);
     }
 
     public static bool operator >=(ScopePath left, ScopePath right)
     {
-        return (left == right) || (left.Back() == right);
+        return SequenceStartsWith(left, right);
     }
 
     public static ScopePath operator &(ScopePath left, ScopePath right)
@@ -127,5 +158,34 @@ public readonly record struct ScopePath
         return left.Append(right);
     }
 
+    public static bool operator ==(ScopePath left, ScopePath right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(ScopePath left, ScopePath right)
+    {
+        return !left.Equals(right);
+    }
+
     public static ScopePath RootScope { get; } = new ScopePath();
+
+    private static bool SequenceStartsWith(ScopePath sequence, ScopePath startsWith)
+    {
+        var itSequence = sequence.Segments.GetEnumerator();
+        var itStarts = sequence.Segments.GetEnumerator();
+
+        while(itStarts.MoveNext())
+        {
+            var el = itStarts.Current;
+
+            if (!itSequence.MoveNext())
+                return false;
+
+            if (el != itSequence.Current)
+                return false;
+        }
+
+        return true;
+    }
 }
