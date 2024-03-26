@@ -173,7 +173,7 @@ public readonly struct ScopePath
     private static bool SequenceStartsWith(ScopePath sequence, ScopePath startsWith)
     {
         var itSequence = sequence.Segments.GetEnumerator();
-        var itStarts = sequence.Segments.GetEnumerator();
+        var itStarts = startsWith.Segments.GetEnumerator();
 
         while(itStarts.MoveNext())
         {
@@ -182,7 +182,7 @@ public readonly struct ScopePath
             if (!itSequence.MoveNext())
                 return false;
 
-            if (el != itSequence.Current)
+            if (!el.Equals(itSequence.Current))
                 return false;
         }
 
