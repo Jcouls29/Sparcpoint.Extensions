@@ -6,6 +6,7 @@ public readonly record struct ScopePath
 {
     public string[] Segments { get; }
     public bool IsRootScope => (this == RootScope);
+    public int Rank => Segments.Length;
 
     public ScopePath(string[]? segments)
     {
@@ -58,6 +59,14 @@ public readonly record struct ScopePath
         return "/" + string.Join("/", Segments ?? Array.Empty<string>());
     }
 
+    public static ScopePath Parse(string path)
+    {
+        if (!TryParse(path, out ScopePath? result))
+            throw new InvalidOperationException($"Could not parse ScopePath from value '{path}'");
+
+        return result.Value;
+    }
+
     public static bool TryParse(string path, [NotNullWhen(true)] out ScopePath? result)
     {
         result = null;
@@ -68,24 +77,54 @@ public readonly record struct ScopePath
             return true;
         }
 
-        var normalizePath = path.Replace("\\", "/").ToLower();
-        var split = normalizePath.Split('/');
+        var normalizePath = path;
+
+        foreach(var alias in ScopePathOptions.AliasSeparators)
+        {
+            normalizePath.Replace(alias, ScopePathOptions.SegmentSeparator);
+        }
+
+        normalizePath = normalizePath.ToLower();
+
+        var split = normalizePath.Split(ScopePathOptions.SegmentSeparator).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
 
         result = new ScopePath(split);
         return true;
     }
 
-    public static explicit operator ScopePath(string path)
+    public static implicit operator ScopePath(string path)
     {
-        if (ScopePath.TryParse(path, out var result))
-            return result.Value;
-
-        throw new InvalidOperationException($"Could not parse the result.");
+        return Parse(path);
     }
 
     public static implicit operator string(ScopePath scope)
     {
         return scope.ToString();
+    }
+
+    public static bool operator <(ScopePath left, ScopePath right) 
+    {
+        return left == right.Back();
+    }
+
+    public static bool operator >(ScopePath left, ScopePath right)
+    {
+        return left.Back() == right;
+    }
+
+    public static bool operator <=(ScopePath left, ScopePath right)
+    {
+        return (left == right) || (left == right.Back());
+    }
+
+    public static bool operator >=(ScopePath left, ScopePath right)
+    {
+        return (left == right) || (left.Back() == right);
+    }
+
+    public static ScopePath operator &(ScopePath left, ScopePath right)
+    {
+        return left.Append(right);
     }
 
     public static ScopePath RootScope { get; } = new ScopePath();
