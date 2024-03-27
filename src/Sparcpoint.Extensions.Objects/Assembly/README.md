@@ -6,12 +6,12 @@
 
 ### Package Manager Console
 ```
-Install-Package Sparcpoint.Extensions.Permissions
+Install-Package Sparcpoint.Extensions.Objects
 ```
 
 ### .NET Core CLI
 ```
-dotnet add package Sparcpoint.Extensions.Permissions
+dotnet add package Sparcpoint.Extensions.Objects
 ```
 
 ## Usage
