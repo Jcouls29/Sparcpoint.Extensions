@@ -9,7 +9,7 @@ public class PermissionEntryExtensions_Tests
     [Theory]
     [InlineData("/")]
     [InlineData("/OtherScope/ChildScope")]
-    public void When_no_permissions_returns_none_RootScope(string? scope)
+    public void When_no_permissions_returns_none_RootScope(string scope)
     {
         List<AccountPermissionEntry> entries = new List<AccountPermissionEntry>();
         var value = entries.CalculatePermissionValue(scope, "ACCOUNT", "KEY");
