@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sparcpoint.Extensions.DependencyInjection\Sparcpoint.Extensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
