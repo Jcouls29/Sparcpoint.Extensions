@@ -2,7 +2,7 @@
 
 public record AccountPermissionEntry
 {
-    public const string ALL_ACCOUNTS_ID = "/* ALL */";
+    public const string ALL_ACCOUNTS_ID = "*";
 
     public AccountPermissionEntry(string accountId, PermissionEntry entry)
     {
