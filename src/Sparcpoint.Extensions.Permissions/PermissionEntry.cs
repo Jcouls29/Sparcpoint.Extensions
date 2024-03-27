@@ -21,4 +21,8 @@ public record PermissionEntry
 
     public static PermissionEntry Create(string key, PermissionValue value, ScopePath? scope = null, Dictionary<string, string>? metadata = null)
         => new PermissionEntry(key, value, scope, metadata);
+    public static PermissionEntry Allow(string key, ScopePath? scope = null, Dictionary<string, string>? metadata = null)
+        => Create(key, PermissionValue.Allow, scope, metadata);
+    public static PermissionEntry Deny(string key, ScopePath? scope = null, Dictionary<string, string>? metadata = null)
+        => Create(key, PermissionValue.Deny, scope, metadata);
 }

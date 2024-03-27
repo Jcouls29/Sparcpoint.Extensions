@@ -138,4 +138,35 @@ public class ScopePath_Tests
 
         Assert.Equal(finalScope, leftScope & rightScope);
     }
+
+    [Theory]
+    [InlineData("/original", "/new")]
+    [InlineData("/original/second", "/original/third")]
+    [InlineData("/original/second", "/new/second")]
+    public void No_scope_overlap(string left, string right)
+    {
+        ScopePath leftScope = ScopePath.Parse(left);
+        ScopePath rightScope = ScopePath.Parse(right);
+
+        Assert.False(leftScope < rightScope);
+        Assert.False(leftScope > rightScope);
+        Assert.False(leftScope <= rightScope);
+        Assert.False(leftScope >= rightScope);
+        Assert.False(leftScope == rightScope);
+        Assert.True(leftScope !=  rightScope);
+    }
+
+    [Theory]
+    [InlineData("/original", "/other", "/")]
+    [InlineData("/original", "/original/secondary", "/original")]
+    [InlineData("/original/secondary/third", "/original", "/original")]
+    [InlineData("/original/secondary/third", "/original/secondary/fourth", "/original/secondary")]
+    public void Branch_points_valid(string left, string right, string branch)
+    {
+        var leftScope = ScopePath.Parse(left);
+        var rightScope = ScopePath.Parse(right);
+        var branchScope = ScopePath.Parse(branch);
+
+        Assert.Equal(branch, leftScope.GetBranchPoint(rightScope));
+    }
 }

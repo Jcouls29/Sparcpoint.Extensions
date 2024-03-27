@@ -59,6 +59,31 @@ public readonly struct ScopePath
         return new ScopePath(Segments.Take(Segments.Length - numberLevels).ToArray());
     }
 
+    public ScopePath GetBranchPoint(ScopePath other)
+    {
+        List<string> branch = new();
+
+        var enumerator1 = Segments.GetEnumerator();
+        var enumerator2 = other.Segments.GetEnumerator();
+
+        while(enumerator1.MoveNext())
+        {
+            var e1 = enumerator1.Current;
+            if (e1 == null)
+                break;
+
+            if (!enumerator2.MoveNext())
+                break;
+            var e2 = enumerator2.Current;
+            if (e2 == null || !e1.Equals(e2))
+                break;
+
+            branch.Add(e1.ToString()!);
+        }
+
+        return new ScopePath(branch.ToArray());
+    }
+
     public override int GetHashCode()
     {
         int code = 0;

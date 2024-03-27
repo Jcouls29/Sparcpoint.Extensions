@@ -7,6 +7,4 @@ public interface IPermissionStore
 
     IAccountPermissionView GetView(string accountId, ScopePath? scope = null);
     IScopePermissionView GetView(ScopePath scope);
-
-    Task<bool> IsAllowedAsync(string accountId, string key, ScopePath? scope = null);
 }

@@ -1,5 +1,6 @@
 ﻿using Sparcpoint.Extensions.Permissions;
 using Sparcpoint.Extensions.Permissions.Extensions;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Sparcpoint.Extensions.Tests.Permissions;
 
@@ -179,5 +180,75 @@ public class PermissionEntryExtensions_Tests
         var value = entries.CalculatePermissionValue("/OtherScope/ChildScope/2", "ACCOUNT", "KEY");
 
         Assert.Equal(PermissionValue.None, value);
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/scope")]
+    [InlineData("/scope/second-level")]
+    public void All_accounts_provides_value(string scope)
+    {
+        var entries = new List<AccountPermissionEntry>(new[] {
+            AccountPermissionEntry.AllowAll("KEY", scope: scope),
+        });
+        var value = entries.CalculatePermissionValue("/scope/second-level/third", "ACCOUNT", "KEY");
+
+        Assert.Equal(PermissionValue.Allow, value);
+    }
+
+    [Theory]
+    [InlineData("/scope/second-level")]
+    [InlineData("/scope/second-level/third")]
+    public void With_all_accounts_entry_specific_entry_overrides(string checkScope)
+    {
+        var entries = new List<AccountPermissionEntry>(new[] {
+            AccountPermissionEntry.DenyAll("KEY", scope: "/scope"),
+            AccountPermissionEntry.Create("ACCOUNT", "KEY", PermissionValue.Allow, scope: "/scope/second-level")
+        });
+        var value = entries.CalculatePermissionValue(checkScope, "ACCOUNT", "KEY");
+
+        Assert.Equal(PermissionValue.Allow, value);
+    }
+
+    [Theory]
+    [InlineData("/scope/second-level")]
+    [InlineData("/scope/second-level/third")]
+    public void With_all_accounts_entry_specific_entry_overrides_deny(string checkScope)
+    {
+        var entries = new List<AccountPermissionEntry>(new[] {
+            AccountPermissionEntry.AllowAll("KEY", scope: "/scope"),
+            AccountPermissionEntry.Create("ACCOUNT", "KEY", PermissionValue.Deny, scope: "/scope/second-level")
+        });
+        var value = entries.CalculatePermissionValue(checkScope, "ACCOUNT", "KEY");
+
+        Assert.Equal(PermissionValue.Deny, value);
+    }
+
+    [Theory]
+    [InlineData("/scope/second-level")]
+    [InlineData("/scope/second-level/third")]
+    public void With_all_accounts_after_specific_entry_all_overrides(string checkScope)
+    {
+        var entries = new List<AccountPermissionEntry>(new[] {
+            AccountPermissionEntry.AllowAll("KEY", scope: "/scope/second-level"),
+            AccountPermissionEntry.Create("ACCOUNT", "KEY", PermissionValue.Deny, scope: "/scope")
+        });
+        var value = entries.CalculatePermissionValue(checkScope, "ACCOUNT", "KEY");
+
+        Assert.Equal(PermissionValue.Allow, value);
+    }
+
+    [Theory]
+    [InlineData("/scope/second-level")]
+    [InlineData("/scope/second-level/third")]
+    public void With_all_accounts_after_specific_entry_all_overrides_deny(string checkScope)
+    {
+        var entries = new List<AccountPermissionEntry>(new[] {
+            AccountPermissionEntry.DenyAll("KEY", scope: "/scope/second-level"),
+            AccountPermissionEntry.Create("ACCOUNT", "KEY", PermissionValue.Allow, scope: "/scope")
+        });
+        var value = entries.CalculatePermissionValue(checkScope, "ACCOUNT", "KEY");
+
+        Assert.Equal(PermissionValue.Deny, value);
     }
 }
