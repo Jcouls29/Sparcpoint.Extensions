@@ -1,4 +1,4 @@
-# Sparcpoint.Extensions.Objects
+# Sparcpoint.Common
 
 [TODO]
 
@@ -6,12 +6,12 @@
 
 ### Package Manager Console
 ```
-Install-Package Sparcpoint.Extensions.Objects
+Install-Package Sparcpoint.Common
 ```
 
 ### .NET Core CLI
 ```
-dotnet add package Sparcpoint.Extensions.Objects
+dotnet add package Sparcpoint.Common
 ```
 
 ## Usage

@@ -59,8 +59,8 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
             query = query.Where(e => parameters.ScopeStartsWith < e.Entry.Scope);
         if (parameters.ValueExact != null)
             query = query.Where(e => e.Entry.Value == parameters.ValueExact);
-        if (parameters.ScopeExact != null && parameters.ImmediateChildrenOnly)
-            query = query.Where(e => e.Entry.Scope.Rank == parameters.ScopeExact.Value.Rank + 1);
+        if (parameters.ScopeStartsWith != null && parameters.ImmediateChildrenOnly)
+            query = query.Where(e => e.Entry.Scope.Rank == parameters.ScopeStartsWith.Value.Rank + 1);
 
         if (parameters.ScopeEndsWith != null)
         {

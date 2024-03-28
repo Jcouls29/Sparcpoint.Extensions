@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Sparcpoint.Extensions.Permissions;
+﻿namespace Sparcpoint;
 
 public static class ScopePathOptions
 {

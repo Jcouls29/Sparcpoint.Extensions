@@ -1,4 +1,4 @@
-# Sparcpoint.Extensions.DependencyInjection
+# Sparcpoint.Extensions.Permissions
 
 [TODO]
 

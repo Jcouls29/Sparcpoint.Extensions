@@ -49,4 +49,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sparcpoint.Common\Sparcpoint.Common.csproj" />
+  </ItemGroup>
+
 </Project>
