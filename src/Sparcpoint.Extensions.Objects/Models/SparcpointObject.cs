@@ -23,3 +23,5 @@ public abstract record SparcpointObject : ISparcpointObject
         throw new NotImplementedException();
     }
 }
+
+// TODO: Dynamically Get / Set Properties
