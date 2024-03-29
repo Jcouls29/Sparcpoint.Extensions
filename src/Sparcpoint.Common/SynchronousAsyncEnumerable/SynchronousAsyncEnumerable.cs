@@ -1,7 +1,7 @@
 ﻿
 namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 
-internal class SynchronousAsyncEnumerable<T> : IAsyncEnumerable<T>
+public class SynchronousAsyncEnumerable<T> : IAsyncEnumerable<T>
 {
     private readonly IEnumerable<T> _Values;
 

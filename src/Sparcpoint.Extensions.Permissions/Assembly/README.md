@@ -1,6 +1,6 @@
-# Sparcpoint.Extensions.DependencyInjection
+# Sparcpoint.Extensions.Permissions
 
-Decoration and child service extensions for `Microsoft.Extensions.Permissions`
+[TODO]
 
 ## Installation
 

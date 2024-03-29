@@ -8,15 +8,15 @@
     <Version>$(VersionPrefix)</Version>
     <Authors>Justin Coulston</Authors>
     <Company>Sparcpoint, LLC</Company>
-    <Product>Sparcpoint Extensions</Product>
-    <Description>Decoration and child service extensions for Microsoft.Extensions.DependencyInjection</Description>
+    <Product>Sparcpoint Common</Product>
+    <Description>Common Sparcpoint objects used to bind various Sparcpoint extensions and libraries together</Description>
     <Copyright>(c) 2024 Sparcpoint, LLC</Copyright>
     <PackageProjectUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.DependencyInjection</PackageTags>
-    <PackageReleaseNotes>Initial Offering</PackageReleaseNotes>
+    <PackageTags>csharp;common;sparcpoint</PackageTags>
+    <PackageReleaseNotes>Common</PackageReleaseNotes>
     <EnablePackageValidation>true</EnablePackageValidation>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -33,11 +33,6 @@
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="Assembly\README.md">

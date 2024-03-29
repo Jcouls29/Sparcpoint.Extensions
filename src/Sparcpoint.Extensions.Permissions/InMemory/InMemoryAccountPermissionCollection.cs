@@ -9,9 +9,12 @@ namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 internal class InMemoryAccountPermissionCollection : IAccountPermissionCollection
 {
     private readonly List<AccountPermissionEntry> _Entries;
-    public InMemoryAccountPermissionCollection(List<AccountPermissionEntry> entries, string accountId, ScopePath currentScope)
+    private readonly object _LockObject;
+
+    public InMemoryAccountPermissionCollection(List<AccountPermissionEntry> entries, object lockObject, string accountId, ScopePath currentScope)
     {
         _Entries = entries;
+        _LockObject = lockObject;
 
         AccountId = accountId;
         CurrentScope = currentScope;
@@ -24,19 +27,26 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
     {
         Assertions.NotEmptyOrWhitespace(key);
 
-        var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
-        if (found != null)
-            _Entries.Remove(found);
+        lock(_LockObject)
+        {
+            var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
+            if (found != null)
+                _Entries.Remove(found);
 
-        _Entries.Add(new AccountPermissionEntry(AccountId, new PermissionEntry(key, value, CurrentScope, metadata)));
+            _Entries.Add(new AccountPermissionEntry(AccountId, new PermissionEntry(key, value, CurrentScope, metadata)));
+        }
+        
         return Task.CompletedTask;
     }
 
     public Task ClearAsync()
     {
-        var removeValues = ScopedView.ToArray();
-        foreach(var value in removeValues)
-            _Entries.Remove(value);
+        lock(_LockObject)
+        {
+            var removeValues = ScopedView.ToArray();
+            foreach (var value in removeValues)
+                _Entries.Remove(value);
+        }
 
         return Task.CompletedTask;
     }
@@ -64,9 +74,12 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
 
     public Task RemoveAsync(string key)
     {
-        var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
-        if (found != null)
-            _Entries.Remove(found);
+        lock(_LockObject)
+        {
+            var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
+            if (found != null)
+                _Entries.Remove(found);
+        }
 
         return Task.CompletedTask;
     }

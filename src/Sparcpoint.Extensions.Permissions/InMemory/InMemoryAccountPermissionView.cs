@@ -10,10 +10,13 @@ namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 internal class InMemoryAccountPermissionView : IAccountPermissionView
 {
     private readonly List<AccountPermissionEntry> _Entries;
+    private readonly object _LockObject;
 
-    public InMemoryAccountPermissionView(List<AccountPermissionEntry> entries, string accountId, ScopePath currentScope)
+    public InMemoryAccountPermissionView(List<AccountPermissionEntry> entries, object lockObject, string accountId, ScopePath currentScope)
     {
         _Entries = entries;
+        _LockObject = lockObject;
+
         AccountId = accountId;
         CurrentScope = currentScope;
     }
