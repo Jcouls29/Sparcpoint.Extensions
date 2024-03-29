@@ -10,34 +10,36 @@ namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQuery
 {
     private readonly List<AccountPermissionEntry> _Entries;
+    private object _LockObject;
 
     public InMemoryPermissionStore(List<AccountPermissionEntry> entries)
     {
         _Entries = entries;
+        _LockObject = new();
     }
 
     public IAccountPermissionCollection Get(string accountId, ScopePath? scope = null)
     {
         Assertions.NotEmptyOrWhitespace(accountId);
 
-        return new InMemoryAccountPermissionCollection(_Entries, accountId, scope ?? ScopePath.RootScope);
+        return new InMemoryAccountPermissionCollection(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
     }
 
     public IAccountPermissionView GetView(string accountId, ScopePath? scope = null)
     {
         Assertions.NotEmptyOrWhitespace(accountId);
 
-        return new InMemoryAccountPermissionView(_Entries, accountId, scope ?? ScopePath.RootScope);
+        return new InMemoryAccountPermissionView(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
     }
 
     public IScopePermissionCollection Get(ScopePath scope)
     {
-        return new InMemoryScopePermissionCollection(_Entries, scope);
+        return new InMemoryScopePermissionCollection(_Entries, _LockObject, scope);
     }
 
     public IScopePermissionView GetView(ScopePath scope)
     {
-        return new InMemoryScopePermissionView(_Entries, scope);
+        return new InMemoryScopePermissionView(_Entries, _LockObject, scope);
     }
 
     public Task<IEnumerable<PermissionEntry>> RunAsync(string accountId, PermissionQueryParameters parameters)

@@ -3,10 +3,13 @@
 internal class InMemoryScopePermissionCollection : IScopePermissionCollection
 {
     private readonly List<AccountPermissionEntry> _Entries;
+    private readonly object _LockObject;
 
-    public InMemoryScopePermissionCollection(List<AccountPermissionEntry> entries, ScopePath currentScope)
+    public InMemoryScopePermissionCollection(List<AccountPermissionEntry> entries, object lockObject, ScopePath currentScope)
     {
         _Entries = entries;
+        _LockObject = lockObject;
+
         CurrentScope = currentScope;
     }
 
@@ -14,9 +17,12 @@ internal class InMemoryScopePermissionCollection : IScopePermissionCollection
 
     public Task ClearAsync()
     {
-        var removeValues = ScopedView.ToArray();
-        foreach (var value in removeValues)
-            _Entries.Remove(value);
+        lock(_LockObject)
+        {
+            var removeValues = ScopedView.ToArray();
+            foreach (var value in removeValues)
+                _Entries.Remove(value);
+        }
 
         return Task.CompletedTask;
     }
@@ -43,9 +49,12 @@ internal class InMemoryScopePermissionCollection : IScopePermissionCollection
 
     public Task RemoveAsync(string accountId, string key)
     {
-        var found = ScopedView.FirstOrDefault(c => c.AccountId == accountId && c.Entry.Key == key);
-        if (found != null)
-            _Entries.Remove(found);
+        lock(_LockObject)
+        {
+            var found = ScopedView.FirstOrDefault(c => c.AccountId == accountId && c.Entry.Key == key);
+            if (found != null)
+                _Entries.Remove(found);
+        }
 
         return Task.CompletedTask;
     }
@@ -55,11 +64,15 @@ internal class InMemoryScopePermissionCollection : IScopePermissionCollection
         Assertions.NotEmptyOrWhitespace(accountId);
         Assertions.NotEmptyOrWhitespace(key);
 
-        var found = ScopedView.FirstOrDefault(c => c.AccountId == accountId && c.Entry.Key == key);
-        if (found != null)
-            _Entries.Remove(found);
+        lock(_LockObject)
+        {
+            var found = ScopedView.FirstOrDefault(c => c.AccountId == accountId && c.Entry.Key == key);
+            if (found != null)
+                _Entries.Remove(found);
 
-        _Entries.Add(new AccountPermissionEntry(accountId, new PermissionEntry(key, value, CurrentScope, metadata)));
+            _Entries.Add(new AccountPermissionEntry(accountId, new PermissionEntry(key, value, CurrentScope, metadata)));
+        }
+        
         return Task.CompletedTask;
     }
 
