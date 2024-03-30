@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Objec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Common", "src\Sparcpoint.Common\Sparcpoint.Common.csproj", "{E156EE7F-1D75-4925-94A4-32F4367F6E30}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Azure", "src\Sparcpoint.Extensions.Azure\Sparcpoint.Extensions.Azure.csproj", "{1C759193-5577-434C-9BFB-5C4838A69FDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{E156EE7F-1D75-4925-94A4-32F4367F6E30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E156EE7F-1D75-4925-94A4-32F4367F6E30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E156EE7F-1D75-4925-94A4-32F4367F6E30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C759193-5577-434C-9BFB-5C4838A69FDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C759193-5577-434C-9BFB-5C4838A69FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C759193-5577-434C-9BFB-5C4838A69FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C759193-5577-434C-9BFB-5C4838A69FDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
