@@ -2,7 +2,7 @@
 
 public interface IAccountPermissionQuery
 {
-    Task<IEnumerable<PermissionEntry>> RunAsync(string accountId, PermissionQueryParameters parameters);
+    IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters);
     Task<bool> HasAccessAsync(string accountId, string key, ScopePath? scope = null);
 }
 

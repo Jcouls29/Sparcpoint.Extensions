@@ -4,7 +4,7 @@ public record PermissionEntry
 {
     public PermissionEntry(string key, PermissionValue value, ScopePath? scope = null, Dictionary<string, string>? metadata = null)
     {
-        Assertions.NotEmptyOrWhitespace(key);
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
 
         Scope = scope ?? ScopePath.RootScope;
         Key = key;

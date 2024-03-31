@@ -25,9 +25,9 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
 
     public Task SetAsync(string key, PermissionValue value, Dictionary<string, string>? metadata = null)
     {
-        Assertions.NotEmptyOrWhitespace(key);
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
 
-        lock(_LockObject)
+        lock (_LockObject)
         {
             var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
             if (found != null)
@@ -53,12 +53,16 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
 
     public Task<bool> ContainsAsync(string key)
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
+
         var result = ScopedView.Any(k => k.Entry.Key == key);
         return Task.FromResult(result);
     }
 
     public Task<PermissionEntry> GetAsync(string key)
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
+
         var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
         if (found == null)
             throw new KeyNotFoundException($"Permission with key '{key}' not found.");
@@ -74,7 +78,9 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
 
     public Task RemoveAsync(string key)
     {
-        lock(_LockObject)
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
+
+        lock (_LockObject)
         {
             var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
             if (found != null)

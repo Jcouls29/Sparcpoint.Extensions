@@ -52,5 +52,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
+  </ItemGroup>
+
 
 </Project>

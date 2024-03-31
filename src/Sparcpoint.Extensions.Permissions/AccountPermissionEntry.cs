@@ -6,7 +6,7 @@ public record AccountPermissionEntry
 
     public AccountPermissionEntry(string accountId, PermissionEntry entry)
     {
-        Assertions.NotEmptyOrWhitespace(accountId);
+        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         AccountId = accountId;
         Entry = entry;

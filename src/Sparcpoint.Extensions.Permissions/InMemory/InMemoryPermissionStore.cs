@@ -20,14 +20,14 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
 
     public IAccountPermissionCollection Get(string accountId, ScopePath? scope = null)
     {
-        Assertions.NotEmptyOrWhitespace(accountId);
+        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         return new InMemoryAccountPermissionCollection(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
     }
 
     public IAccountPermissionView GetView(string accountId, ScopePath? scope = null)
     {
-        Assertions.NotEmptyOrWhitespace(accountId);
+        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         return new InMemoryAccountPermissionView(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
     }
@@ -42,9 +42,9 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
         return new InMemoryScopePermissionView(_Entries, _LockObject, scope);
     }
 
-    public Task<IEnumerable<PermissionEntry>> RunAsync(string accountId, PermissionQueryParameters parameters)
+    public async IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters)
     {
-        Assertions.NotEmptyOrWhitespace(accountId);
+        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         IQueryable<AccountPermissionEntry> query = _Entries.AsQueryable();
         query = query.Where(e => e.AccountId == accountId);
@@ -80,13 +80,16 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
         }
 
         var result = query.Select(e => e.Entry).ToArray();
-        return Task.FromResult((IEnumerable<PermissionEntry>)result);
+        foreach(var entry in result)
+        {
+            yield return entry;
+        }
     }
 
     public Task<bool> HasAccessAsync(string accountId, string key, ScopePath? scope = null)
     {
-        Assertions.NotEmptyOrWhitespace(accountId);
-        Assertions.NotEmptyOrWhitespace(key);
+        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
 
         var view = _Entries.Where(e => e.AccountId == accountId && e.Entry.Key == key);
         var result = view.CalculatePermissionValue(scope ?? ScopePath.RootScope, accountId, key);
