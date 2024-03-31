@@ -8,9 +8,9 @@ namespace Sparcpoint.Extensions.Azure.Permissions;
 internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 {
     private readonly BlobClient _Client;
-    public BlobStorageScopePermissionCollection(BlobContainerClient containerClient, ScopePath scope)
+    public BlobStorageScopePermissionCollection(BlobContainerClient containerClient, ScopePath scope, string filename)
     {
-        _Client = containerClient.GetBlobClient(scope.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+        _Client = containerClient.GetBlobClient(scope.Append(filename));
         CurrentScope = scope;
     }
 

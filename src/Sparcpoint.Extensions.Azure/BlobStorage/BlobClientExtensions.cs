@@ -1,10 +1,17 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
 using System.Text.Json;
 
 namespace Azure.Data.Tables;
 
 public static class BlobClientExtensions
 {
+    public static async Task EnsureContainerCreatedAsync(this BlobClient client)
+    {
+        var containerClient = client.GetParentBlobContainerClient();
+        await containerClient.CreateIfNotExistsAsync();
+    }
+
     public static async Task<T?> GetAsJsonAsync<T>(this BlobClient client, JsonSerializerOptions? options = default) where T : class
     {
         if (!await client.ExistsAsync())

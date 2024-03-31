@@ -8,12 +8,12 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
 {
     private readonly BlobClient _Client;
 
-    public BlobStorageAccountPermissionCollection(BlobContainerClient client, string accountId, ScopePath? scope = null)
+    public BlobStorageAccountPermissionCollection(BlobContainerClient client, string accountId, ScopePath? scope, string filename)
     {
         AccountId = accountId;
         CurrentScope = scope ?? ScopePath.RootScope;
 
-        _Client = client.GetBlobClient(CurrentScope.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+        _Client = client.GetBlobClient(CurrentScope.Append(filename));
     }
 
     public string AccountId { get; }

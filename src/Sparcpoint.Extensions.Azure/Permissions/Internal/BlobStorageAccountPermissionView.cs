@@ -8,13 +8,15 @@ namespace Sparcpoint.Extensions.Azure.Permissions;
 internal class BlobStorageAccountPermissionView : IAccountPermissionView
 {
     private readonly BlobContainerClient _Client;
+    private readonly string _Filename;
     private readonly BlobStoragePermissionStoreViewOptions _Options;
 
-    public BlobStorageAccountPermissionView(BlobContainerClient client, string accountId, ScopePath? scope, BlobStoragePermissionStoreViewOptions options)
+    public BlobStorageAccountPermissionView(BlobContainerClient client, string accountId, ScopePath? scope, BlobStoragePermissionStoreViewOptions options, string filename)
     {
         _Client = client;
         AccountId = accountId;
         CurrentScope = scope ?? ScopePath.RootScope;
+        _Filename = filename;
         _Options = options;
     }
 
@@ -28,7 +30,7 @@ internal class BlobStorageAccountPermissionView : IAccountPermissionView
         List<PermissionEntry> entries = new();
         await foreach (var scope in GetValidScopes())
         {
-            var bc = _Client.GetBlobClient(scope.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+            var bc = _Client.GetBlobClient(scope.Append(_Filename));
 
             var values = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
             if (values != null)
@@ -52,7 +54,7 @@ internal class BlobStorageAccountPermissionView : IAccountPermissionView
 
         foreach (var entry in hierarchy)
         {
-            var bc = _Client.GetBlobClient(entry.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+            var bc = _Client.GetBlobClient(entry.Append(_Filename));
             if (await bc.ExistsAsync())
                 yield return entry;
         }

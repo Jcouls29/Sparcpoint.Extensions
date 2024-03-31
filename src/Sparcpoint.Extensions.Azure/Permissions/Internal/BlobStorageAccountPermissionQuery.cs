@@ -8,14 +8,18 @@ namespace Sparcpoint.Extensions.Azure.Permissions;
 internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 {
     private readonly BlobContainerClient _Client;
+    private readonly string _Filename;
 
-    public BlobStorageAccountPermissionQuery(BlobContainerClient client)
+    public BlobStorageAccountPermissionQuery(BlobContainerClient client, string filename)
     {
         _Client = client;
+        _Filename = filename;
     }
 
     public async Task<bool> HasAccessAsync(string accountId, string key, ScopePath? scope = null)
     {
+        await _Client.CreateIfNotExistsAsync();
+
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
         Ensure.ArgumentNotNullOrWhiteSpace(key);
 
@@ -32,7 +36,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     private async Task<AccountPermissionEntryDto?> GetScopeAsync(ScopePath searchScope, string accountId, string key)
     {
-        var bc = _Client.GetBlobClient(searchScope + BlobStoragePermissionStore.PERMISSION_FILE_NAME);
+        var bc = _Client.GetBlobClient(searchScope.Append(_Filename));
         if (await bc.ExistsAsync())
         {
             var coll = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
@@ -48,6 +52,8 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     public async IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters)
     {
+        await _Client.CreateIfNotExistsAsync();
+
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         List<Func<PermissionEntry, bool>> filters = new();
@@ -120,7 +126,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     private async IAsyncEnumerable<PermissionEntry> GetValues(ScopePath scope, string accountId)
     {
-        var bc = _Client.GetBlobClient(scope + BlobStoragePermissionStore.PERMISSION_FILE_NAME);
+        var bc = _Client.GetBlobClient(scope.Append(_Filename));
         var coll = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
             yield break;
@@ -169,7 +175,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     private async Task<bool> DoesScopeExistAsync(ScopePath scope)
     {
-        var bc = _Client.GetBlobClient(scope + BlobStoragePermissionStore.PERMISSION_FILE_NAME);
+        var bc = _Client.GetBlobClient(scope.Append(_Filename));
         return await bc.ExistsAsync();
     }
 }

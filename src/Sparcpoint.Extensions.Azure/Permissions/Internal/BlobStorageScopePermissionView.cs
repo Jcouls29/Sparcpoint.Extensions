@@ -9,13 +9,15 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
 {
     private readonly BlobContainerClient _Client;
     private readonly BlobStoragePermissionStoreViewOptions _Options;
+    private readonly string _Filename;
 
     // TODO: Allow for the inclusion of the root scope
-    public BlobStorageScopePermissionView(BlobContainerClient client, ScopePath scope, BlobStoragePermissionStoreViewOptions options)
+    public BlobStorageScopePermissionView(BlobContainerClient client, ScopePath scope, BlobStoragePermissionStoreViewOptions options, string filename)
     {
         _Client = client;
         CurrentScope = scope;
         _Options = options;
+        _Filename = filename;
     }
 
     public ScopePath CurrentScope { get; }
@@ -26,7 +28,7 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
         List<AccountPermissionEntry> entries = new();
         await foreach(var scope in GetValidScopes())
         {
-            var bc = _Client.GetBlobClient(scope.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+            var bc = _Client.GetBlobClient(scope.Append(_Filename));
 
             var values = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
             if (values != null)
@@ -50,7 +52,7 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
 
         foreach(var entry in hierarchy)
         {
-            var bc = _Client.GetBlobClient(entry.Append(BlobStoragePermissionStore.PERMISSION_FILE_NAME));
+            var bc = _Client.GetBlobClient(entry.Append(_Filename));
             if (await bc.ExistsAsync())
                 yield return entry;
         }
