@@ -11,7 +11,6 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
     private readonly BlobStoragePermissionStoreViewOptions _Options;
     private readonly string _Filename;
 
-    // TODO: Allow for the inclusion of the root scope
     public BlobStorageScopePermissionView(BlobContainerClient client, ScopePath scope, BlobStoragePermissionStoreViewOptions options, string filename)
     {
         _Client = client;
