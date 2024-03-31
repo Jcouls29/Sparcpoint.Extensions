@@ -13,11 +13,11 @@ internal class InMemoryObjectStore<T> : IObjectStore<T> where T : ISparcpointObj
         _LockObject = lockObject ?? throw new ArgumentNullException(nameof(lockObject));
     }
 
-    public Task DeleteAsync(IEnumerable<T> o)
+    public Task DeleteAsync(IEnumerable<ScopePath> ids)
     {
         lock (_LockObject)
         {
-            var found = _Entries.Where(x => o.Any(i => i.Id == x.Id)).ToArray();
+            var found = _Entries.Where(x => ids.Any(i => i == x.Id)).ToArray();
             foreach (var e in found)
             {
                 _Entries.Remove(e);

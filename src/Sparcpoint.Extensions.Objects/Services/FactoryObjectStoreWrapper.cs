@@ -9,8 +9,8 @@ public sealed class FactoryObjectStoreWrapper<T> : IObjectStore<T> where T : cla
         _InnerService = factory.CreateStore<T>();
     }
 
-    public async Task DeleteAsync(IEnumerable<T> o)
-        => await _InnerService.DeleteAsync(o);
+    public async Task DeleteAsync(IEnumerable<ScopePath> ids)
+        => await _InnerService.DeleteAsync(ids);
 
     public async Task<T?> FindAsync(ScopePath id)
         => await _InnerService.FindAsync(id);
