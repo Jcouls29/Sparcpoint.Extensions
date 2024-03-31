@@ -27,7 +27,7 @@ internal class InMemoryObjectStore<T> : IObjectStore<T> where T : ISparcpointObj
         return Task.CompletedTask;
     }
 
-    public Task<T> GetAsync(ScopePath id)
+    public Task<T?> FindAsync(ScopePath id)
     {
         lock (_LockObject)
         {
@@ -35,7 +35,7 @@ internal class InMemoryObjectStore<T> : IObjectStore<T> where T : ISparcpointObj
             if (found == null || found.GetType() != typeof(T))
                 throw new KeyNotFoundException($"Object with id '{id}' not found or of the wrong type.");
 
-            return Task.FromResult((T)found);
+            return Task.FromResult((T?)found);
         }
     }
 

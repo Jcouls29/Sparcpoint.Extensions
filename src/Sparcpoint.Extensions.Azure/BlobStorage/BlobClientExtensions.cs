@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using System.Text.Json;
 
@@ -6,23 +7,20 @@ namespace Azure.Data.Tables;
 
 public static class BlobClientExtensions
 {
-    public static async Task EnsureContainerCreatedAsync(this BlobClient client)
-    {
-        var containerClient = client.GetParentBlobContainerClient();
-        await containerClient.CreateIfNotExistsAsync();
-    }
-
     public static async Task<T?> GetAsJsonAsync<T>(this BlobClient client, JsonSerializerOptions? options = default) where T : class
-    {
-        if (!await client.ExistsAsync())
-            return null;
+        => (T?) await GetAsJsonAsync(client, typeof(T), options);
 
+    public static async Task<object?> GetAsJsonAsync(this BlobClient client, Type type, JsonSerializerOptions? options = default, bool skipExistenceCheck = false)
+    {
+        if (!skipExistenceCheck && !await client.ExistsAsync())
+            return null;
+        
         var response = await client.DownloadContentAsync();
         var contents = response.Value.Content.ToString();
-        return JsonSerializer.Deserialize<T>(contents);
+        return JsonSerializer.Deserialize(contents, type, options);
     }
 
-    public static async Task UpdateAsJsonAsync<T>(this BlobClient client, T? value, JsonSerializerOptions? options = default) where T : class
+    public static async Task UpdateAsJsonAsync<T>(this BlobClient client, T? value, JsonSerializerOptions? options = default, IDictionary<string, string>? tags = null) where T : class
     {
         if (value == null)
         {
@@ -30,14 +28,23 @@ public static class BlobClientExtensions
             return;
         }
 
-        using (var writeStream = await client.OpenWriteAsync(true))
+        BlobOpenWriteOptions? blobOptions = null;
+        if (tags != null && tags.Count > 0)
+        {
+            blobOptions = new BlobOpenWriteOptions
+            {
+                Tags = tags
+            };
+        }
+
+        using (var writeStream = await client.OpenWriteAsync(true, options: blobOptions))
         {
             JsonSerializer.Serialize(writeStream, value, options);
             await writeStream.FlushAsync();
         }
     }
 
-    public static async Task UpdateAsJsonAsync<T>(this BlobClient client, Func<T?, Task<T?>> updater, JsonSerializerOptions? options = default)
+    public static async Task UpdateAsJsonAsync<T>(this BlobClient client, Func<T?, Task<T?>> updater, JsonSerializerOptions? options = default, IDictionary<string, string>? tags = null)
     {
         T? updatedValue = default;
         ETag originalETag = ETag.All;
@@ -66,7 +73,15 @@ public static class BlobClientExtensions
                 return;
         }
 
-        var writeOptions = new Storage.Blobs.Models.BlobOpenWriteOptions { OpenConditions = new Storage.Blobs.Models.BlobRequestConditions { IfMatch = originalETag } };
+        IDictionary<string, string>? optionTags = null;
+        if (tags != null && tags.Count > 0)
+            optionTags = tags;
+
+        var writeOptions = new Storage.Blobs.Models.BlobOpenWriteOptions 
+        { 
+            OpenConditions = new Storage.Blobs.Models.BlobRequestConditions { IfMatch = originalETag },
+            Tags = optionTags
+        };
         using (var writeStream = await client.OpenWriteAsync(true, writeOptions))
         {
             JsonSerializer.Serialize(writeStream, updatedValue, options);

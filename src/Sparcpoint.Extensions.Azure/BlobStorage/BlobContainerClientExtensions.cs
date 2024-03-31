@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
 using SmartFormat;
 using Sparcpoint.Extensions.Azure;
 using System.Reflection;
@@ -9,6 +10,21 @@ namespace Azure.Data.Tables;
 
 public static class BlobContainerClientExtensions
 {
+    public static async Task EnsureContainerCreatedAsync(this BlobClient client)
+    {
+        var containerClient = client.GetParentBlobContainerClient();
+        await containerClient.CreateIfNotExistsAsync();
+    }
+
+    public static async Task BulkDeleteAsync(this BlobContainerClient client, IEnumerable<string> blobNames)
+    {
+        // TODO: Atomicity
+        foreach (var blobName in blobNames)
+        {
+            await client.DeleteBlobIfExistsAsync(blobName);
+        }
+    }
+
     public static async Task<BlobContainerClient> GetContainer(this BlobServiceClient service, Type entityType, object? parameters = null)
     {
         var attr = GetKeyAttribute(entityType);

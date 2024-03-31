@@ -11,5 +11,5 @@ public record ObjectQueryParameters
 
     public Dictionary<string, string>? WithProperties { get; set; } = null;
 
-    internal Type? WithType { get; set; } = null;
+    public Type? WithType { get; set; } = null;
 }

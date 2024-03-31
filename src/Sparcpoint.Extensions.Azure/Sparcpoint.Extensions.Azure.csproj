@@ -53,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sparcpoint.Extensions.Objects\Sparcpoint.Extensions.Objects.csproj" />
     <ProjectReference Include="..\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
   </ItemGroup>
 
