@@ -8,6 +8,6 @@ namespace Sparcpoint.Common;
 
 public interface IObjectMapper
 {
-    IReadOnlyDictionary<string, string?> Map<T>(T obj);
-    T? Map<T>(IReadOnlyDictionary<string, string?> dictionary);
+    void Map<T>(T obj, IDictionary<string, string?> output);
+    void Map<T>(IReadOnlyDictionary<string, string?> dictionary, T output);
 }

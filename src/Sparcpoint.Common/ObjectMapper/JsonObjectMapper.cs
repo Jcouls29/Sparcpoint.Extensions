@@ -17,10 +17,11 @@ public sealed class JsonObjectMapper : IObjectMapper
         _Options.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     }
 
-    public IReadOnlyDictionary<string, string?> Map<T>(T obj)
+    public void Map<T>(T obj, IDictionary<string, string?> results)
     {
-        var props = typeof(T).GetEligibleProperties();
-        Dictionary<string, string?> results = new();
+        Ensure.ArgumentNotNull(obj);
+
+        var props = obj.GetType().GetEligibleProperties();
 
         foreach(var p in props)
         {
@@ -65,14 +66,11 @@ public sealed class JsonObjectMapper : IObjectMapper
             var json = JsonSerializer.Serialize(value, p.PropertyType);
             results.Add(p.Name, json);
         }
-
-        return results;
     }
 
-    public T? Map<T>(IReadOnlyDictionary<string, string?> dictionary) 
+    public void Map<T>(IReadOnlyDictionary<string, string?> dictionary, T result) 
     {
         var props = typeof(T).GetEligibleProperties();
-        var result = (T?)Activator.CreateInstance(typeof(T));
 
         foreach(var p in props)
         {
@@ -103,7 +101,7 @@ public sealed class JsonObjectMapper : IObjectMapper
                 p.SetValue(result, objValue);
             }
         }
-
-        return result;
     }
+
+    public static JsonObjectMapper Instance { get; } = new JsonObjectMapper();
 }

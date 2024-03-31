@@ -9,6 +9,9 @@ public sealed class FactoryObjectQueryWrapper<T> : IObjectQuery<T> where T : cla
         _InnerService = factory.CreateQuery<T>();
     }
 
-    public IAsyncEnumerable<T> RunAsync(ObjectQueryParameters parameters)
-        => _InnerService.RunAsync(parameters);
+    public async IAsyncEnumerable<T> RunAsync(ObjectQueryParameters parameters)
+    {
+        await foreach (var item in _InnerService.RunAsync(parameters))
+            yield return item;
+    }
 }

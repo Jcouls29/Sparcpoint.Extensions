@@ -1,11 +1,24 @@
+using Azure.Data.Tables;
 using Microsoft.Extensions.DependencyInjection;
-using Sparcpoint.Extensions.Azure.Objects;
-using Sparcpoint.Extensions.Objects;
+
 
 namespace Sparcpoint.Extensions.IntegrationTests;
 
 public class BlobStorageObjectStore_Tests_BasicFunctionality
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Justin Coulston")]
+    [InlineData("/My name is /*&%^$#")]
+    public void Can_encode_and_decode_blob_tag_values(string? value)
+    {
+        var encoded = value.EncodeBlobTagValue();
+        var decoded = value.DecodeBlobTagValue();
+
+        Assert.Equal(value, decoded);
+    }
+
     [Fact]
     public async Task Can_save_and_retrieve_all_field_types()
     {

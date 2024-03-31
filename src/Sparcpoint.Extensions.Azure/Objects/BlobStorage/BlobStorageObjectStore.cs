@@ -55,10 +55,15 @@ internal class BlobStorageObjectStore<T> : IObjectStore<T> where T : class, ISpa
         var blobName = o.Id.Append(_Options.Filename).ToString();
         var bc = _Client.GetBlobClient(blobName);
 
+        var typeValue = typeof(T).AssemblyQualifiedName ?? throw new InvalidOperationException($"ISparcpointObject type is invalid.");
+        
+        typeValue = typeValue.EncodeBlobTagValue();
+        var name = o.Name.EncodeBlobTagValue();
+
         await bc.UpdateAsJsonAsync(o, tags: new Dictionary<string, string>
         {
-            [Constants.TYPE_KEY] = typeof(T).FullName ?? throw new InvalidOperationException($"ISparcointObject type is invalid."),
-            [Constants.NAME_KEY] = o.Name,
+            [Constants.TYPE_KEY] = typeValue,
+            [Constants.NAME_KEY] = name,
         });
     }
 }

@@ -48,9 +48,9 @@ internal class BlobStorageObjectQuery : IObjectQuery
         // 2. Set the tag search, if valid
         List<string> tagFilters = new();
         if (!string.IsNullOrWhiteSpace(parameters.Name))
-            tagFilters.Add($"\"{Constants.NAME_KEY}\" = '{parameters.Name}'");
+            tagFilters.Add($"\"{Constants.NAME_KEY}\" = '{parameters.Name.EncodeBlobTagValue()}'");
         if (parameters.WithType != null)
-            tagFilters.Add($"\"{Constants.TYPE_KEY}\" = '{parameters.WithType.FullName}'");
+            tagFilters.Add($"\"{Constants.TYPE_KEY}\" = '{parameters.WithType.AssemblyQualifiedName.EncodeBlobTagValue()}'");
 
         string? tagFilter = null;
         if (tagFilters.Count > 0)
@@ -90,7 +90,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
         if (tags == null || tags.Count == 0 || !tags.TryGetValue(Constants.TYPE_KEY, out string? typeFullName))
             return null;
 
-        Type? objType = Type.GetType(typeFullName);
+        Type? objType = Type.GetType(typeFullName.DecodeBlobTagValue());
         if (objType == null || !typeof(ISparcpointObject).IsAssignableFrom(objType))
             return null;
 
@@ -124,7 +124,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
             filters.Add((item, typeName, name) => (ScopePath.Parse(item.BlobName).Back(2) == parameters.ParentScope));
 
         if (parameters.WithType != null)
-            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.FullName));
+            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.AssemblyQualifiedName));
 
         if (!string.IsNullOrWhiteSpace(parameters.NameStartsWith))
             filters.Add((item, typeName, name) => name.StartsWith(parameters.NameStartsWith));
@@ -151,11 +151,11 @@ internal class BlobStorageObjectQuery : IObjectQuery
             if (typeName == null)
                 continue;
 
-            Type? type = Type.GetType(typeName);
+            Type? type = Type.GetType(typeName.DecodeBlobTagValue());
             if (type == null)
                 continue;
 
-            if (name != null && filter(entry, typeName, name))
+            if (name != null && filter(entry, typeName.DecodeBlobTagValue(), name.DecodeBlobTagValue()))
             {
                 var bc = _Client.GetBlobClient(entry.BlobName);
                 var value = await bc.GetAsJsonAsync(type, skipExistenceCheck: true);
@@ -173,7 +173,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
             filters.Add((item, typeName, name) => (ScopePath.Parse(item.Name).Back(2) == parameters.ParentScope));
 
         if (parameters.WithType != null)
-            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.FullName));
+            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.AssemblyQualifiedName));
 
         if (!string.IsNullOrWhiteSpace(parameters.NameStartsWith))
             filters.Add((item, typeName, name) => name.StartsWith(parameters.NameStartsWith));
@@ -200,11 +200,11 @@ internal class BlobStorageObjectQuery : IObjectQuery
             if (typeName == null)
                 continue;
 
-            Type? type = Type.GetType(typeName);
+            Type? type = Type.GetType(typeName.DecodeBlobTagValue());
             if (type == null)
                 continue;
 
-            if (name != null && filter(entry, typeName, name))
+            if (name != null && filter(entry, typeName.DecodeBlobTagValue(), name.DecodeBlobTagValue()))
             {
                 var bc = _Client.GetBlobClient(entry.Name);
                 var value = await bc.GetAsJsonAsync(type, skipExistenceCheck: true);
@@ -222,7 +222,13 @@ internal class BlobStorageObjectQuery : IObjectQuery
         var valueProps = value.GetProperties();
         foreach (var prop in withProperties)
         {
-            if (!valueProps.TryGetValue(prop.Key, out string? foundPropValue) || foundPropValue == null)
+            if (!valueProps.TryGetValue(prop.Key, out string? foundPropValue))
+                return false;
+
+            if (foundPropValue == null && prop.Value == null)
+                continue;
+
+            if (foundPropValue == null || prop.Value == null)
                 return false;
 
             if (!foundPropValue.Equals(prop.Value))

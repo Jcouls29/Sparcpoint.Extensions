@@ -35,6 +35,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Regex\**" />
+    <EmbeddedResource Remove="Regex\**" />
+    <None Remove="Regex\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Assembly\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

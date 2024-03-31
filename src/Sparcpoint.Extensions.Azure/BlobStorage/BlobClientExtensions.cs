@@ -1,7 +1,11 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.Extensions.Azure;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Azure.Data.Tables;
 
@@ -88,4 +92,72 @@ public static class BlobClientExtensions
             await writeStream.FlushAsync();
         }
     }
+
+    [return: NotNullIfNotNull(nameof(value))]
+    public static string? EncodeBlobTagValue(this string? value)
+    {
+        if (value == null)
+            return null;
+
+        StringBuilder builder = new StringBuilder();
+
+        foreach(var c in value)
+        {
+            if (IsValidBlobTagCharacter(c))
+            {
+                builder.Append(c);
+                continue;
+            }
+
+            string replace = "/:" + (int)c + ":/";
+            builder.Append(replace);
+        }
+
+        var result = builder.ToString();
+        if (!IsValidBlobTagValue(result, out string? message))
+            throw new InvalidOperationException($"Could not sanitize tag value: {message}");
+
+        return result;
+    }
+
+    private static Regex Pattern = new Regex("/:(\\d+):/");
+    [return: NotNullIfNotNull(nameof(value))]
+    public static string? DecodeBlobTagValue(this string? value)
+    {
+        if (value == null)
+            return null;
+
+        return Pattern.Replace(value, (Match m) =>
+        {
+            var c = (char)(int.Parse(m.Groups[1].Value));
+            return c.ToString();
+        });
+    }
+
+    public static bool IsValidBlobTagValue(this string value, out string? message)
+    {
+        message = null;
+
+        if (value == null)
+            return true;
+        if (value.Length > 256)
+        {
+            message = "Tag value cannot be longer than 256 characters.";
+            return false;
+        }
+
+        foreach(var c in value)
+        {
+            if (!IsValidBlobTagCharacter(c))
+            {
+                message = $"'{value}' has invalid character: {c}";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsValidBlobTagCharacter(char c)
+        => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == ' ' || c == '+' || c == '-' || c == '.' || c == ':' || c == '=' || c == '_' || c == '/');
 }
