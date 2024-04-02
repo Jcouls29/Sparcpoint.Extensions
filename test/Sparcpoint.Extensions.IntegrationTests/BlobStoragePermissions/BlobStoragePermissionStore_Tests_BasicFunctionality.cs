@@ -1,4 +1,5 @@
-﻿using Sparcpoint.Extensions.Permissions.Extensions;
+﻿using Sparcpoint.Extensions.Permissions;
+using Sparcpoint.Extensions.Permissions.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,9 @@ public class BlobStoragePermissionStore_Tests_BasicFunctionality : IClassFixture
     {
         _Fixture = fixture;
     }
+
+    public IPermissionStore Store => _Fixture.PermissionStore;
+    public IScopePermissionCollection Collection => _Fixture.PermissionStore.Permissions;
 
     [Theory]
     [InlineData("/")]
@@ -85,5 +89,48 @@ public class BlobStoragePermissionStore_Tests_BasicFunctionality : IClassFixture
 
         // Asert
         Assert.True(await acct02.IsAllowedDirect(BlobStorageFixture.P_READ));
+    }
+
+    [Fact]
+    public async Task Can_add_multiple_entries_to_different_scopes()
+    {
+        const string ACCOUNT_ID = "acct_mtest1";
+
+        await Collection.SetRangeAsync("/organizations/org_01", b => b
+            .Account(ACCOUNT_ID, e => e.Allow(BlobStorageFixture.P_READ).Deny(BlobStorageFixture.P_WRITE))
+            .Scope("/rules/rule_01", s => s
+                .Account(ACCOUNT_ID, e => e.Deny(BlobStorageFixture.P_READ).Allow(BlobStorageFixture.P_WRITE))
+            )
+        );
+
+        Assert.True(await Collection.IsAllowed(ACCOUNT_ID, BlobStorageFixture.P_READ, "/organizations/org_01"));
+        Assert.True(await Collection.IsDenied(ACCOUNT_ID, BlobStorageFixture.P_WRITE, "/organizations/org_01"));
+        Assert.True(await Collection.IsDenied(ACCOUNT_ID, BlobStorageFixture.P_READ, "/rules/rule_01"));
+        Assert.True(await Collection.IsAllowed(ACCOUNT_ID, BlobStorageFixture.P_WRITE, "/rules/rule_01"));
+    }
+
+    [Fact]
+    public async Task Can_remove_multiple_entries_from_different_scopes()
+    {
+        const string ACCOUNT_ID = "acct_mtest2";
+
+        var entries = await Collection.SetRangeAsync("/organizations/org_01", b => b
+            .Account(ACCOUNT_ID, e => e.Allow(BlobStorageFixture.P_READ).Deny(BlobStorageFixture.P_WRITE))
+            .Scope("/rules/rule_01", s => s
+                .Account(ACCOUNT_ID, e => e.Deny(BlobStorageFixture.P_READ).Allow(BlobStorageFixture.P_WRITE))
+            )
+        );
+
+        Assert.True(await Collection.IsAllowed(ACCOUNT_ID, BlobStorageFixture.P_READ, "/organizations/org_01"));
+        Assert.True(await Collection.IsDenied(ACCOUNT_ID, BlobStorageFixture.P_WRITE, "/organizations/org_01"));
+        Assert.True(await Collection.IsDenied(ACCOUNT_ID, BlobStorageFixture.P_READ, "/rules/rule_01"));
+        Assert.True(await Collection.IsAllowed(ACCOUNT_ID, BlobStorageFixture.P_WRITE, "/rules/rule_01"));
+
+        await Collection.RemoveAsync(entries);
+
+        foreach(var e in entries)
+        {
+            Assert.False(await Collection.ContainsAsync(e));
+        }
     }
 }

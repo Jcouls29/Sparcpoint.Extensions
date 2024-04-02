@@ -6,5 +6,16 @@ public static class PermissionStoreExtensions
     {
         return store.Permissions.Get(accountId, scope);
     }
+
+    public static async Task SetRangeAsync(this IPermissionStore store, ScopePath initialScope, Func<ScopePermissionsBuilder, ScopePermissionsBuilder> configure)
+    {
+        var builder = ScopePermissionsBuilder.Create(initialScope);
+        configure(builder);
+        var entries = builder.GetEntries();
+        if (!entries.Any())
+            return;
+
+        await store.Permissions.SetRangeAsync(entries);
+    }
 }
 
