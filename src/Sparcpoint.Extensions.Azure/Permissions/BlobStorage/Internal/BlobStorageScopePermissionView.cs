@@ -31,7 +31,7 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
 
             var values = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
             if (values != null)
-                entries.AddRange(values.Select(c => new AccountPermissionEntry(c.AccountId, c.GetEntry(scope))));
+                entries.AddRange(values.Select(c => new AccountPermissionEntry(c.AccountId, scope, c.GetEntry())));
         }
 
         // 2. Calculate View

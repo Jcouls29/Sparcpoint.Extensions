@@ -3,9 +3,9 @@
 public static class ScopePathExtensions
 {
     public static PermissionEntry Allow(this ScopePath scope, string key, Dictionary<string, string>? metadata = null)
-        => PermissionEntry.Allow(key, scope, metadata);
+        => PermissionEntry.Allow(key, metadata);
     public static PermissionEntry Deny(this ScopePath scope, string key, Dictionary<string, string>? metadata = null)
-        => PermissionEntry.Deny(key, scope, metadata);
+        => PermissionEntry.Deny(key, metadata);
 
     public static AccountPermissionEntry Allow(this ScopePath scope, string accountId, string key, Dictionary<string, string>? metadata = null)
         => AccountPermissionEntry.Allow(accountId, key, scope, metadata);

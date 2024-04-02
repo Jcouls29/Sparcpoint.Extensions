@@ -9,7 +9,7 @@ public record ObjectQueryParameters
     public string? NameStartsWith { get; set; } = null;
     public string? NameEndsWith { get; set; } = null;
 
-    public Dictionary<string, string>? WithProperties { get; set; } = null;
+    public Dictionary<string, string?>? WithProperties { get; set; } = null;
 
     public Type? WithType { get; set; } = null;
 }

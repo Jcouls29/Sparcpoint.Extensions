@@ -2,11 +2,12 @@
 
 public interface IScopePermissionCollection : IAsyncEnumerable<AccountPermissionEntry>
 {
-    ScopePath CurrentScope { get; }
-
-    Task SetAsync(string accountId, string key, PermissionValue value, Dictionary<string, string>? metadata = null);
-    Task RemoveAsync(string accountId, string key);
-    Task<bool> ContainsAsync(string accountId, string key);
+    Task SetRangeAsync(IEnumerable<AccountPermissionEntry> entries);
+    Task RemoveAsync(IEnumerable<AccountPermissionEntry> entries);
     Task ClearAsync();
-    Task<IAsyncEnumerable<AccountPermissionEntry>> GetAsync(string key);
+
+    Task<bool> ContainsAsync(AccountPermissionEntry entry);
+
+    IAsyncEnumerable<AccountPermissionEntry> GetAsync(ScopePath scope);
+    IAccountPermissionCollection Get(string accountId, ScopePath? scope = null);
 }

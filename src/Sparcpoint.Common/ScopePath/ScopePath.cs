@@ -4,18 +4,22 @@ namespace Sparcpoint;
 
 public readonly struct ScopePath
 {
-    public string[] Segments { get; }
+    private readonly string[] _Segments = Array.Empty<string>();
+    public string[] Segments
+    {
+        get => _Segments ?? Array.Empty<string>();
+    }
     public bool IsRootScope => (this == RootScope);
     public int Rank => Segments.Length;
 
     public ScopePath()
     {
-        Segments = Array.Empty<string>();
+        _Segments = Array.Empty<string>();
     }
 
     public ScopePath(string[]? segments)
     {
-        Segments = segments ?? Array.Empty<string>();
+        _Segments = segments ?? Array.Empty<string>();
         ValidateSegments();
     }
 
@@ -33,8 +37,11 @@ public readonly struct ScopePath
     {
         int code = 0;
 
-        foreach(var s in Segments)
-            code = HashCode.Combine(code, s.GetHashCode());
+        if (Segments != null)
+        {
+            foreach (var s in Segments)
+                code = HashCode.Combine(code, s.GetHashCode());
+        }
 
         return code;
     }

@@ -9,6 +9,6 @@ internal class AccountPermissionEntryDto
     public PermissionValue Value { get; set; }
     public Dictionary<string, string> Metadata { get; set; } = new();
 
-    internal PermissionEntry GetEntry(ScopePath scope)
-        => new PermissionEntry(Key, Value, scope, Metadata);
+    internal PermissionEntry GetEntry()
+        => new PermissionEntry(Key, Value, Metadata);
 }

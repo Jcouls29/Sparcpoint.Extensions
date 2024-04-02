@@ -16,25 +16,17 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
     {
         _Entries = entries;
         _LockObject = new();
+
+        Permissions = new InMemoryScopePermissionCollection(_Entries, _LockObject);
     }
 
-    public IAccountPermissionCollection Get(string accountId, ScopePath? scope = null)
-    {
-        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
-
-        return new InMemoryAccountPermissionCollection(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
-    }
+    public IScopePermissionCollection Permissions { get; }
 
     public IAccountPermissionView GetView(string accountId, ScopePath? scope = null)
     {
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
         return new InMemoryAccountPermissionView(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
-    }
-
-    public IScopePermissionCollection Get(ScopePath scope)
-    {
-        return new InMemoryScopePermissionCollection(_Entries, _LockObject, scope);
     }
 
     public IScopePermissionView GetView(ScopePath scope)
@@ -56,18 +48,18 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
         if (!string.IsNullOrWhiteSpace(parameters.KeyEndsWith))
             query = query.Where(e => e.Entry.Key.EndsWith(parameters.KeyEndsWith));
         if (parameters.ScopeExact != null)
-            query = query.Where(e => e.Entry.Scope == parameters.ScopeExact);
+            query = query.Where(e => e.Scope == parameters.ScopeExact);
         if (parameters.ScopeStartsWith != null)
-            query = query.Where(e => parameters.ScopeStartsWith < e.Entry.Scope);
+            query = query.Where(e => parameters.ScopeStartsWith < e.Scope);
         if (parameters.ValueExact != null)
             query = query.Where(e => e.Entry.Value == parameters.ValueExact);
         if (parameters.ScopeStartsWith != null && parameters.ImmediateChildrenOnly)
-            query = query.Where(e => e.Entry.Scope.Rank == parameters.ScopeStartsWith.Value.Rank + 1);
+            query = query.Where(e => e.Scope.Rank == parameters.ScopeStartsWith.Value.Rank + 1);
 
         if (parameters.ScopeEndsWith != null)
         {
             var endsWithValue = parameters.ScopeEndsWith.Value.ToString();
-            query = query.Where(e => e.Entry.Scope.ToString().EndsWith(endsWithValue));
+            query = query.Where(e => e.Scope.ToString().EndsWith(endsWithValue));
         }
 
         if (parameters.WithMetadata != null && parameters.WithMetadata.Count > 0)

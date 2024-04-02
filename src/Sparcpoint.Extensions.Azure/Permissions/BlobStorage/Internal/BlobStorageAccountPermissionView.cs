@@ -27,20 +27,20 @@ internal class BlobStorageAccountPermissionView : IAccountPermissionView
     public async IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         // 1. Load up all Entries
-        List<PermissionEntry> entries = new();
+        List<AccountPermissionEntry> entries = new();
         await foreach (var scope in GetValidScopes())
         {
             var bc = _Client.GetBlobClient(scope.Append(_Filename));
 
             var values = await bc.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
             if (values != null)
-                entries.AddRange(values.Where(e => e.AccountId == AccountId).Select(c => c.GetEntry(scope)));
+                entries.AddRange(values.Where(e => e.AccountId == AccountId).Select(c => new AccountPermissionEntry(c.AccountId, CurrentScope, new PermissionEntry(c.Key, c.Value, c.Metadata))));
         }
 
         // 2. Calculate View
         var view = entries.CalculateView(CurrentScope);
         foreach (var e in view)
-            yield return e;
+            yield return e.Entry;
     }
 
     private async IAsyncEnumerable<ScopePath> GetValidScopes()

@@ -133,7 +133,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
         foreach(var entry in coll.Where(e => e.AccountId == accountId))
         {
-            yield return entry.GetEntry(scope);
+            yield return entry.GetEntry();
         }
     }
 

@@ -17,4 +17,22 @@ public static class ObjectQueryExtensions
 
         return null;
     }
+
+    public static async Task<List<T>> ToListAsync<T>(this IObjectQuery<T> query, ObjectQueryParameters parameters) where T : class, ISparcpointObject
+    {
+        List<T> results = new();
+        await foreach (var item in query.RunAsync(parameters))
+            results.Add(item);
+
+        return results;
+    }
+
+    public static async Task<T[]> ToArrayAsync<T>(this IObjectQuery<T> query, ObjectQueryParameters parameters) where T : class, ISparcpointObject
+    {
+        List<T> results = new();
+        await foreach (var item in query.RunAsync(parameters))
+            results.Add(item);
+
+        return results.ToArray();
+    }
 }

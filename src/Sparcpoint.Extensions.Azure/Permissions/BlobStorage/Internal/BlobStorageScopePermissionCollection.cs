@@ -1,5 +1,6 @@
 ﻿using Azure.Data.Tables;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Sparcpoint.Extensions.Permissions;
 using Sparcpoint.Extensions.Permissions.Services.InMemory;
 
@@ -7,103 +8,166 @@ namespace Sparcpoint.Extensions.Azure.Permissions;
 
 internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 {
-    private readonly BlobClient _Client;
-    public BlobStorageScopePermissionCollection(BlobContainerClient containerClient, ScopePath scope, string filename)
-    {
-        _Client = containerClient.GetBlobClient(scope.Append(filename));
-        CurrentScope = scope;
-    }
+    private readonly BlobContainerClient _ContainerClient;
+    private readonly string _Filename;
 
-    public ScopePath CurrentScope { get; }
+    public BlobStorageScopePermissionCollection(BlobContainerClient containerClient, string filename)
+    {
+        _ContainerClient = containerClient;
+        _Filename = filename;
+    }
 
     public async Task ClearAsync()
     {
-        await _Client.DeleteIfExistsAsync();
+        await _ContainerClient.CreateIfNotExistsAsync();
+
+        await foreach(var client in GetAllPermissionBlobs())
+        {
+            await client.DeleteIfExistsAsync();
+        }
     }
 
-    public async Task<bool> ContainsAsync(string accountId, string key)
+    public async Task<bool> ContainsAsync(AccountPermissionEntry entry)
     {
-        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
+        EnsureEntryValid(entry);
 
-        var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
+        await _ContainerClient.CreateIfNotExistsAsync();
+        var client = GetScopeClient(entry.Scope);
+        if (!await client.ExistsAsync())
+            return false;
+
+        var coll = await client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
             return false;
 
-        return coll.Any(e => e.AccountId == accountId && e.Key == key);
-    }
-
-    public async Task<IAsyncEnumerable<AccountPermissionEntry>> GetAsync(string key)
-    {
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
-
-        var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
-        if (coll == null)
-            coll = new();
-
-        var found = coll
-            .Where(e => e.Key == key)
-            .Select(e => new AccountPermissionEntry(e.AccountId, e.GetEntry(CurrentScope)))
-            .ToList();
-
-        return new SynchronousAsyncEnumerable<AccountPermissionEntry>(found);
+        return coll.Any(e => e.AccountId == entry.AccountId && e.Key == entry.Entry.Key);
     }
 
     public async IAsyncEnumerator<AccountPermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
-        if (coll == null)
-            coll = new();
+        await _ContainerClient.CreateIfNotExistsAsync();
 
-        foreach(var f in coll)
+        await foreach(var client in GetAllPermissionBlobs())
         {
-            yield return new AccountPermissionEntry(f.AccountId, f.GetEntry(CurrentScope));
+            var coll = await client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
+            if (coll == null)
+                continue;
+
+            foreach (var item in coll)
+                yield return new AccountPermissionEntry(item.AccountId, ScopePath.Parse(client.Name).Back(), new PermissionEntry(item.Key, item.Value, item.Metadata));
         }
     }
 
-    public async Task RemoveAsync(string accountId, string key)
+    public async Task SetRangeAsync(IEnumerable<AccountPermissionEntry> entries)
     {
-        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
-        
-        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+        EnsureEntriesValid(entries);
+
+        await _ContainerClient.CreateIfNotExistsAsync();
+
+        var groups = entries.GroupBy(e => e.Scope);
+        foreach(var scope in groups)
         {
-            if (coll == null)
-                return null;
-
-            var found = coll.Where(e => e.AccountId == accountId && e.Key == key).ToArray();
-            foreach(var f in found)
+            var client = GetScopeClient(scope.Key);
+            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
             {
-                coll.Remove(f);
-            }
+                if (coll == null)
+                    coll = new List<AccountPermissionEntryDto>();
 
-            return coll;
-        });
+                foreach(var item in scope)
+                {
+                    var found = coll.FirstOrDefault(e => e.AccountId == item.AccountId && e.Key == item.Entry.Key);
+                    if (found == null)
+                    {
+                        found = new();
+                        coll.Add(found);
+                    }
+
+                    found.AccountId = item.AccountId;
+                    found.Key = item.Entry.Key;
+                    found.Value = item.Entry.Value;
+                    found.Metadata = item.Entry.Metadata ?? new();
+                }
+
+                return coll;
+            });
+        }
     }
 
-    public async Task SetAsync(string accountId, string key, PermissionValue value, Dictionary<string, string>? metadata = null)
+    public async Task RemoveAsync(IEnumerable<AccountPermissionEntry> entries)
     {
-        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
+        EnsureEntriesValid(entries);
 
-        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+        await _ContainerClient.CreateIfNotExistsAsync();
+
+        var groups = entries.GroupBy(e => e.Scope);
+
+        foreach(var scope in groups)
         {
-            if (coll == null)
-                return new List<AccountPermissionEntryDto>();
-
-            var found = coll.FirstOrDefault(e => e.AccountId == accountId && e.Key == key);
-            if (found == null)
+            var client = GetScopeClient(scope.Key);
+            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
             {
-                found = new();
-                coll.Add(found);
-            }
+                if (coll == null)
+                    return null;
 
-            found.AccountId = accountId;
-            found.Key = key;
-            found.Value = value;
-            found.Metadata = metadata ?? new();
+                foreach(var item in scope)
+                {
+                    var found = coll.Where(e => e.AccountId == item.AccountId && e.Key == item.Entry.Key).ToArray();
+                    foreach (var f in found)
+                        coll.Remove(f);
+                }
 
-            return coll;
-        });
+                return coll;
+            });
+        }
+    }
+
+    public async IAsyncEnumerable<AccountPermissionEntry> GetAsync(ScopePath scope)
+    {
+        await _ContainerClient.CreateIfNotExistsAsync();
+
+        var client = GetScopeClient(scope);
+        var coll = await client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
+        if (coll == null)
+            yield break;
+
+        foreach(var item in coll)
+        {
+            yield return new AccountPermissionEntry(item.AccountId, scope, new PermissionEntry(item.Key, item.Value, item.Metadata));
+        }
+    }
+
+    public IAccountPermissionCollection Get(string accountId, ScopePath? scope = null)
+    {
+        return new BlobStorageAccountPermissionCollection(_ContainerClient, accountId, scope, _Filename);
+    }
+
+    private async IAsyncEnumerable<BlobClient> GetAllPermissionBlobs()
+    {
+        await _ContainerClient.CreateIfNotExistsAsync();
+
+        await foreach(var b in _ContainerClient.GetBlobsAsync())
+        {
+            if (b.Name.EndsWith("/" + _Filename))
+                yield return _ContainerClient.GetBlobClient(b.Name);
+        }
+    }
+
+    private BlobClient GetScopeClient(ScopePath scope)
+        => _ContainerClient.GetBlobClient(scope.Append(_Filename));
+
+    private void EnsureEntriesValid(IEnumerable<AccountPermissionEntry> entries)
+    {
+        foreach (var e in entries)
+        {
+            EnsureEntryValid(e);
+        }
+    }
+
+    private void EnsureEntryValid(AccountPermissionEntry entry)
+    {
+        Ensure.ArgumentNotNull(entry);
+        Ensure.ArgumentNotNullOrWhiteSpace(entry.AccountId);
+        Ensure.ArgumentNotNull(entry.Entry);
+        Ensure.ArgumentNotNullOrWhiteSpace(entry.Entry.Key);
     }
 }

@@ -26,10 +26,10 @@ internal class InMemoryAccountPermissionView : IAccountPermissionView
 
     public IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var intermediate = _Entries.Where(e => e.AccountId == AccountId && e.Entry.Scope <= CurrentScope).Select(c => c.Entry).ToArray();
-        var allPermissionKeys = intermediate.Select(c => c.Key).Distinct();
+        var intermediate = _Entries.Where(e => e.AccountId == AccountId && e.Scope <= CurrentScope).ToArray();
+        var allPermissionKeys = intermediate.Select(c => c.Entry.Key).Distinct();
 
-        var view = allPermissionKeys.Select(k => new PermissionEntry(k, intermediate.CalculatePermissionValue(CurrentScope, k), CurrentScope, null)).ToList();
+        var view = allPermissionKeys.Select(k => new PermissionEntry(k, intermediate.CalculatePermissionValue(CurrentScope, AccountId, k), null)).ToList();
         return new SynchronousAsyncEnumerator<PermissionEntry>(view.GetEnumerator());
     }
 }

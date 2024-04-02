@@ -16,8 +16,10 @@ public class JsonObjectMapper_Conversions
     {
         var expected = new AllPropertyTypesObject();
 
-        var dict = _Service.Map(expected);
-        var actual = _Service.Map<AllPropertyTypesObject>(dict);
+        var dict = new Dictionary<string, string?>();
+        _Service.Map(expected, dict);
+        var actual = new AllPropertyTypesObject();
+        _Service.Map<AllPropertyTypesObject>(dict, actual);
 
         Assert.NotNull(actual);
         Assert.Equal(expected.ByteValue, actual.ByteValue);

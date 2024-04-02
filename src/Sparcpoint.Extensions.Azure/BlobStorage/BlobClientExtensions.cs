@@ -32,26 +32,44 @@ public static class BlobClientExtensions
             return;
         }
 
-        BlobOpenWriteOptions? blobOptions = null;
+        ETag? originalTag = null;
+        if (await client.ExistsAsync())
+        {
+            var props = await client.GetPropertiesAsync();
+            originalTag = props.Value.ETag;
+        }
+
+        BlobUploadOptions? blobOptions = null;
         if (tags != null && tags.Count > 0)
         {
-            blobOptions = new BlobOpenWriteOptions
+            blobOptions = new BlobUploadOptions
             {
-                Tags = tags
+                Tags = tags,
+                Conditions = new BlobRequestConditions
+                {
+                    IfMatch = originalTag,
+                    IfNoneMatch = originalTag == null ? ETag.All : null,
+                },
+                
             };
         }
 
-        using (var writeStream = await client.OpenWriteAsync(true, options: blobOptions))
+        using (var stream = new MemoryStream())
         {
-            JsonSerializer.Serialize(writeStream, value, options);
-            await writeStream.FlushAsync();
+            JsonSerializer.Serialize(stream, value, options);
+            stream.Position = 0;
+            await client.UploadAsync(stream, blobOptions);
         }
     }
 
     public static async Task UpdateAsJsonAsync<T>(this BlobClient client, Func<T?, Task<T?>> updater, JsonSerializerOptions? options = default, IDictionary<string, string>? tags = null)
     {
         T? updatedValue = default;
-        ETag originalETag = ETag.All;
+        ETag? originalETag = null;
+
+        IDictionary<string, string>? optionTags = null;
+        if (tags != null && tags.Count > 0)
+            optionTags = tags;
 
         if (await client.ExistsAsync())
         {
@@ -67,7 +85,18 @@ public static class BlobClientExtensions
                 await client.DeleteIfExistsAsync();
                 return;
             }
-        } 
+
+            var writeOptions = new BlobOpenWriteOptions
+            {
+                OpenConditions = new BlobRequestConditions { IfMatch = originalETag },
+                Tags = optionTags
+            };
+            using (var writeStream = await client.OpenWriteAsync(true, writeOptions))
+            {
+                JsonSerializer.Serialize(writeStream, updatedValue, options);
+                await writeStream.FlushAsync();
+            }
+        }
         else
         {
             updatedValue = await updater(default);
@@ -75,21 +104,19 @@ public static class BlobClientExtensions
             // If we're still null then we do not need to do anything
             if (updatedValue == null)
                 return;
-        }
 
-        IDictionary<string, string>? optionTags = null;
-        if (tags != null && tags.Count > 0)
-            optionTags = tags;
+            var writeOptions = new BlobUploadOptions
+            {
+                Tags = optionTags,
+                Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All }
+            };
 
-        var writeOptions = new Storage.Blobs.Models.BlobOpenWriteOptions 
-        { 
-            OpenConditions = new Storage.Blobs.Models.BlobRequestConditions { IfMatch = originalETag },
-            Tags = optionTags
-        };
-        using (var writeStream = await client.OpenWriteAsync(true, writeOptions))
-        {
-            JsonSerializer.Serialize(writeStream, updatedValue, options);
-            await writeStream.FlushAsync();
+            using (var stream = new MemoryStream())
+            {
+                JsonSerializer.Serialize(stream, updatedValue, options);
+                stream.Position = 0;
+                await client.UploadAsync(stream, writeOptions);
+            }
         }
     }
 

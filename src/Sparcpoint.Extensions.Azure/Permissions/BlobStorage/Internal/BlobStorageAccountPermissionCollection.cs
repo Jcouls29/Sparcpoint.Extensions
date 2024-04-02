@@ -6,6 +6,7 @@ namespace Sparcpoint.Extensions.Azure.Permissions;
 
 internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollection
 {
+    private readonly BlobContainerClient _ContainerClient;
     private readonly BlobClient _Client;
 
     public BlobStorageAccountPermissionCollection(BlobContainerClient client, string accountId, ScopePath? scope, string filename)
@@ -13,6 +14,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
         AccountId = accountId;
         CurrentScope = scope ?? ScopePath.RootScope;
 
+        _ContainerClient = client;
         _Client = client.GetBlobClient(CurrentScope.Append(filename));
     }
 
@@ -21,6 +23,8 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
 
     public async Task ClearAsync()
     {
+        await _ContainerClient.CreateIfNotExistsAsync();
+
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
             if (coll == null)
@@ -41,6 +45,8 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
     {
         Ensure.ArgumentNotNullOrWhiteSpace(key);
 
+        await _ContainerClient.CreateIfNotExistsAsync();
+
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
             return false;
@@ -48,9 +54,11 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
         return coll.Any(e => e.AccountId == AccountId && e.Key == key);
     }
 
-    public async Task<PermissionEntry> GetAsync(string key)
+    public async Task<PermissionEntry?> FindAsync(string key)
     {
         Ensure.ArgumentNotNullOrWhiteSpace(key);
+
+        await _ContainerClient.CreateIfNotExistsAsync();
 
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
@@ -58,13 +66,15 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
 
         var found = coll.FirstOrDefault(e => e.AccountId == AccountId && e.Key == key);
         if (found == null)
-            throw new KeyNotFoundException($"Entry {key} not found.");
+            return null;
 
-        return new PermissionEntry(found.Key, found.Value, CurrentScope, found.Metadata);
+        return new PermissionEntry(found.Key, found.Value, found.Metadata);
     }
 
     public async IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
+        await _ContainerClient.CreateIfNotExistsAsync();
+
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
             yield break;
@@ -72,49 +82,63 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
         var accountItems = coll.Where(e => e.AccountId == AccountId).ToArray();
         foreach (var item in accountItems)
         {
-            yield return new PermissionEntry(item.Key, item.Value, CurrentScope, item.Metadata);
+            yield return new PermissionEntry(item.Key, item.Value, item.Metadata);
         }
     }
 
-    public async Task RemoveAsync(string key)
+    public async Task RemoveAsync(IEnumerable<string> keys)
     {
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
+        foreach(var k in keys)
+        {
+            Ensure.ArgumentNotNullOrWhiteSpace(k);
+        }
 
+        await _ContainerClient.CreateIfNotExistsAsync();
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
             if (coll == null)
                 return null;
 
-            var found = coll.Where(e => e.AccountId == AccountId && e.Key == key).ToArray();
-            foreach(var f in found)
+            foreach(var k in keys)
             {
-                coll.Remove(f);
+                var found = coll.Where(e => e.AccountId == AccountId && e.Key == k).ToArray();
+                foreach (var f in found)
+                {
+                    coll.Remove(f);
+                }
             }
 
             return coll;
         });
     }
 
-    public async Task SetAsync(string key, PermissionValue value, Dictionary<string, string>? metadata = null)
+    public async Task SetRangeAsync(IEnumerable<PermissionEntry> entries)
     {
-        Ensure.ArgumentNotNullOrWhiteSpace(key);
+        foreach(var e in entries)
+        {
+            Ensure.ArgumentNotNullOrWhiteSpace(e.Key);
+        }
 
+        await _ContainerClient.CreateIfNotExistsAsync();
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
             if (coll == null)
-                return new List<AccountPermissionEntryDto>();
+                coll = new List<AccountPermissionEntryDto>();
 
-            var found = coll.FirstOrDefault(e => e.AccountId == AccountId && e.Key == key);
-            if (found == null)
+            foreach (var e in entries)
             {
-                found = new();
-                coll.Add(found);
-            }
+                var found = coll.FirstOrDefault(p => p.AccountId == AccountId && p.Key == e.Key);
+                if (found == null)
+                {
+                    found = new();
+                    coll.Add(found);
+                }
 
-            found.AccountId = AccountId;
-            found.Key = key;
-            found.Value = value;
-            found.Metadata = metadata ?? new();
+                found.AccountId = AccountId;
+                found.Key = e.Key;
+                found.Value = e.Value;
+                found.Metadata = e.Metadata ?? new();
+            }
 
             return coll;
         });

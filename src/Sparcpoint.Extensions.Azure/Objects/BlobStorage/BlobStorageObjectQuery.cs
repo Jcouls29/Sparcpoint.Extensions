@@ -47,10 +47,11 @@ internal class BlobStorageObjectQuery : IObjectQuery
 
         // 2. Set the tag search, if valid
         List<string> tagFilters = new();
+
         if (!string.IsNullOrWhiteSpace(parameters.Name))
             tagFilters.Add($"\"{Constants.NAME_KEY}\" = '{parameters.Name.EncodeBlobTagValue()}'");
         if (parameters.WithType != null)
-            tagFilters.Add($"\"{Constants.TYPE_KEY}\" = '{parameters.WithType.AssemblyQualifiedName.EncodeBlobTagValue()}'");
+            tagFilters.Add($"\"{Constants.TYPE_KEY}\" = '{SparcpointObjectAttribute.GetTypeName(parameters.WithType).EncodeBlobTagValue()}'");
 
         string? tagFilter = null;
         if (tagFilters.Count > 0)
@@ -90,7 +91,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
         if (tags == null || tags.Count == 0 || !tags.TryGetValue(Constants.TYPE_KEY, out string? typeFullName))
             return null;
 
-        Type? objType = Type.GetType(typeFullName.DecodeBlobTagValue());
+        Type? objType = SparcpointObjectAttribute.GetTypeFromName(typeFullName.DecodeBlobTagValue());
         if (objType == null || !typeof(ISparcpointObject).IsAssignableFrom(objType))
             return null;
 
@@ -118,19 +119,22 @@ internal class BlobStorageObjectQuery : IObjectQuery
     private async IAsyncEnumerable<ISparcpointObject> FindByTagsAsync(string tagFilter, ObjectQueryParameters parameters)
     {
         List<Func<TaggedBlobItem, string, string, bool>> filters = new();
-        filters.Add((item, typeName, name) => item.BlobContainerName == _Options.ContainerName);
+        filters.Add((item, _, name) => item.BlobContainerName == _Options.ContainerName);
 
         if (parameters.ParentScope != null)
-            filters.Add((item, typeName, name) => (ScopePath.Parse(item.BlobName).Back(2) == parameters.ParentScope));
+            filters.Add((item, _, name) => (ScopePath.Parse(item.BlobName).Back(2) == parameters.ParentScope));
 
         if (parameters.WithType != null)
-            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.AssemblyQualifiedName));
+        {
+            var typeName = SparcpointObjectAttribute.GetTypeName(parameters.WithType);
+            filters.Add((item, t, name) => t.Equals(typeName));
+        }
 
         if (!string.IsNullOrWhiteSpace(parameters.NameStartsWith))
-            filters.Add((item, typeName, name) => name.StartsWith(parameters.NameStartsWith));
+            filters.Add((item, _, name) => name.StartsWith(parameters.NameStartsWith));
 
         if (!string.IsNullOrWhiteSpace(parameters.NameEndsWith))
-            filters.Add((item, typeName, name) => name.EndsWith(parameters.NameEndsWith));
+            filters.Add((item, _, name) => name.EndsWith(parameters.NameEndsWith));
 
         Func<TaggedBlobItem, string, string, bool> filter = (item, typeName, name) =>
         {
@@ -143,21 +147,31 @@ internal class BlobStorageObjectQuery : IObjectQuery
             return true;
         };
 
+        var allFound = new List<string>();
         await foreach(var entry in _Client.FindBlobsByTagsAsync(tagFilter))
         {
-            entry.Tags.TryGetValue(Constants.TYPE_KEY, out string? typeName);
-            entry.Tags.TryGetValue(Constants.NAME_KEY, out string? name);
+            if (allFound.Contains(entry.BlobName))
+                continue;
+
+            allFound.Add(entry.BlobName);
+
+            // NOTE: Finding blobs by tags does NOT return all tags. Instead, only returns
+            //       tags searched on
+            var bc = _Client.GetBlobClient(entry.BlobName);
+            var tags = (await bc.GetTagsAsync()).Value.Tags;
+
+            tags.TryGetValue(Constants.TYPE_KEY, out string? typeName);
+            tags.TryGetValue(Constants.NAME_KEY, out string? name);
 
             if (typeName == null)
                 continue;
 
-            Type? type = Type.GetType(typeName.DecodeBlobTagValue());
+            Type? type = SparcpointObjectAttribute.GetTypeFromName(typeName.DecodeBlobTagValue());
             if (type == null)
                 continue;
 
             if (name != null && filter(entry, typeName.DecodeBlobTagValue(), name.DecodeBlobTagValue()))
             {
-                var bc = _Client.GetBlobClient(entry.BlobName);
                 var value = await bc.GetAsJsonAsync(type, skipExistenceCheck: true);
                 if (value != null)
                     yield return (ISparcpointObject)value;
@@ -173,7 +187,10 @@ internal class BlobStorageObjectQuery : IObjectQuery
             filters.Add((item, typeName, name) => (ScopePath.Parse(item.Name).Back(2) == parameters.ParentScope));
 
         if (parameters.WithType != null)
-            filters.Add((item, typeName, name) => typeName.Equals(parameters.WithType.AssemblyQualifiedName));
+        {
+            var typeName = SparcpointObjectAttribute.GetTypeName(parameters.WithType);
+            filters.Add((item, t, name) => t.Equals(typeName));
+        }
 
         if (!string.IsNullOrWhiteSpace(parameters.NameStartsWith))
             filters.Add((item, typeName, name) => name.StartsWith(parameters.NameStartsWith));
@@ -200,7 +217,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
             if (typeName == null)
                 continue;
 
-            Type? type = Type.GetType(typeName.DecodeBlobTagValue());
+            Type? type = SparcpointObjectAttribute.GetTypeFromName(typeName.DecodeBlobTagValue());
             if (type == null)
                 continue;
 
@@ -214,7 +231,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
         }
     }
 
-    private bool WithPropertiesMatch(ISparcpointObject value, Dictionary<string, string>? withProperties)
+    private bool WithPropertiesMatch(ISparcpointObject value, Dictionary<string, string?>? withProperties)
     {
         if (withProperties == null || withProperties.Count == 0)
             return true;
