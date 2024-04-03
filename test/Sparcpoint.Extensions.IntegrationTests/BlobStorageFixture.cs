@@ -73,8 +73,8 @@ public class BlobStorageFixture : IAsyncLifetime
     private readonly List<AccountPermissionEntry> _Permissions;
     private IEnumerable<AccountPermissionEntry> SeedPermissions()
     {
-        return ScopePermissionsBuilder.Create("\\")
-            .Account("acct_001", b => b.Allow(P_READ).Deny(P_WRITE))
+        return ScopePermissionsBuilder.Create("/")
+            .Account("acct_001", b => b.Allow(P_READ, new Dictionary<string, string> { ["Color"] = "Blue" }).Deny(P_WRITE))
             .Account("acct_002", b => b.Allow(P_READ).Allow(P_WRITE))
             .Account("acct_003", b => b.Deny(P_READ))
             .Account("acct_005", b => b.Allow(P_READ))
@@ -88,6 +88,11 @@ public class BlobStorageFixture : IAsyncLifetime
                 .Account("acct_003", b => b.Allow(P_READ))
                 .Account("acct_004", b => b.Allow(P_READ))
             )
+            .Scope("/orgs/ABC/projects/project01", s => s.Account("acct_010", b => b.Allow(P_READ)))
+            .Scope("/orgs/ABC/projects/project02", s => s.Account("acct_010", b => b.Deny(P_READ)))
+            .Scope("/orgs/ABC/projects/project03", s => s.Account("acct_010", b => b.Allow(P_READ)))
+            .Scope("/orgs/ABC/projects/project03/widgets/test-widget", s => s.Account("acct_010", b => b.Allow(P_READ)))
+            .Scope("/orgs/ABC/projects/project03/widgets/blue-widget", s => s.Account("acct_010", b => b.Deny(P_READ)))
             .GetEntries();
     }
 

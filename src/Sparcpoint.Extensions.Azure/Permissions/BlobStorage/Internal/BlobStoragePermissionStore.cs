@@ -24,15 +24,7 @@ internal class BlobStoragePermissionStore : IPermissionStore
 
     public IScopePermissionCollection Permissions { get; }
 
-    public IAccountPermissionView GetView(string accountId, ScopePath? scope = null)
-    {
-        _Client.CreateIfNotExists();
-
-        Ensure.ArgumentNotNullOrWhiteSpace(accountId);
-        return new BlobStorageAccountPermissionView(_Client, accountId, scope, _Options.View ?? BlobStoragePermissionStoreViewOptions.Default, _Options.Filename);
-    }
-
-    public IScopePermissionView GetView(ScopePath scope, bool includeRootScope = false)
+    public IScopePermissionView GetView(ScopePath scope, bool includeRootScope = false, string[]? keys = null, string[]? accountIds = null)
     {
         _Client.CreateIfNotExists();
 
@@ -40,6 +32,6 @@ internal class BlobStoragePermissionStore : IPermissionStore
         if (!options.IncludeRootScopeInCalculations && includeRootScope)
             options = options with { IncludeRootScopeInCalculations = true };
 
-        return new BlobStorageScopePermissionView(_Client, scope, options, _Options.Filename);
+        return new BlobStorageScopePermissionView(_Client, scope, keys, accountIds, options, _Options.Filename);
     }
 }

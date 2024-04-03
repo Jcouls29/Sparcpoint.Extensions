@@ -211,7 +211,7 @@ internal class BlobStorageObjectQuery : IObjectQuery
             return true;
         };
 
-        await foreach(var entry in _Client.GetBlobsAsync(BlobTraits.Tags, prefix: prefix)) 
+        await foreach(var entry in _Client.GetBlobsAsync(BlobTraits.Tags, prefix: prefix?.TrimStart('/'))) 
         {
             entry.Tags.TryGetValue(Constants.TYPE_KEY, out string? typeName);
             entry.Tags.TryGetValue(Constants.NAME_KEY, out string? name);

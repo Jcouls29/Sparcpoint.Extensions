@@ -17,5 +17,22 @@ public static class PermissionStoreExtensions
 
         await store.Permissions.SetRangeAsync(entries);
     }
+
+    public static async Task<bool> IsAllowedAsync(this IPermissionStore store, string accountId, string key, ScopePath? scope = null, bool includeRootScope = false)
+        => await IsValueAsync(store, accountId, key, PermissionValue.Allow, scope, includeRootScope);
+
+    public static async Task<bool> IsDeniedAsync(this IPermissionStore store, string accountId, string key, ScopePath? scope = null, bool includeRootScope = false)
+        => await IsValueAsync(store, accountId, key, PermissionValue.Deny, scope, includeRootScope);
+
+    public static async Task<bool> IsValueAsync(this IPermissionStore store, string accountId, string key, PermissionValue value, ScopePath? scope = null, bool includeRootScope = false)
+    {
+        var view = store.GetView(scope ?? ScopePath.RootScope, includeRootScope, new[] { key });
+        var found = await view.FirstOrDefaultAsync(x => x.AccountId == accountId && x.Entry.Key == key);
+
+        if (found == null)
+            return value == PermissionValue.None;
+
+        return found.Entry.Value == value;
+    }
 }
 

@@ -10,11 +10,21 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
     private readonly BlobContainerClient _Client;
     private readonly BlobStoragePermissionStoreViewOptions _Options;
     private readonly string _Filename;
+    private readonly string[]? _Keys;
+    private readonly string[]? _AccountIds;
 
-    public BlobStorageScopePermissionView(BlobContainerClient client, ScopePath scope, BlobStoragePermissionStoreViewOptions options, string filename)
+    public BlobStorageScopePermissionView(
+        BlobContainerClient client, 
+        ScopePath scope, 
+        string[]? keys,
+        string[]? accountIds,
+        BlobStoragePermissionStoreViewOptions options, 
+        string filename)
     {
         _Client = client;
         CurrentScope = scope;
+        _Keys = keys;
+        _AccountIds = accountIds;
         _Options = options;
         _Filename = filename;
     }
@@ -37,7 +47,7 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
         }
 
         // 2. Calculate View
-        var view = entries.CalculateView(CurrentScope);
+        var view = entries.CalculateView(CurrentScope, _Options.IncludeRootScopeInCalculations, _Keys, _AccountIds);
         foreach (var e in view)
             yield return e;
     }

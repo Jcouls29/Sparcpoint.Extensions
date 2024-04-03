@@ -2,12 +2,13 @@
 
 public interface IAccountPermissionQuery
 {
-    IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters);
-    Task<bool> HasAccessAsync(string accountId, string key, ScopePath? scope = null);
+    IAsyncEnumerable<AccountPermissionEntry> RunAsync(PermissionQueryParameters parameters);
 }
 
 public class PermissionQueryParameters
 {
+    public string? AccountId { get; set; } = null;
+
     public string? KeyExact { get; set; } = null;
     public string? KeyStartsWith { get; set; } = null;
     public string? KeyEndsWith { get; set; } = null;

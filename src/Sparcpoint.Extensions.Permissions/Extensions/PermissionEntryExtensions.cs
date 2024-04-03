@@ -20,13 +20,14 @@ public static class PermissionEntryExtensions
         return priorityEntry.Entry.Value;
     }
 
-    public static IEnumerable<AccountPermissionEntry> CalculateView(this IEnumerable<AccountPermissionEntry> entries, ScopePath scope, bool includeRootScope = false)
+    public static IEnumerable<AccountPermissionEntry> CalculateView(this IEnumerable<AccountPermissionEntry> entries, ScopePath scope, bool includeRootScope = false, string[]? keys = null, string[]? accountIds = null)
     {
         var intermediate = entries
             .Where(e => e.Scope <= scope && (includeRootScope || e.Scope > ScopePath.RootScope))
+            .Where(e => keys == null || keys.Contains(e.Entry.Key))
             .ToArray();
-        var allPermissionKeys = intermediate.Select(c => c.Entry.Key).Distinct();
-        var allAccountIds = intermediate.Select(c => c.AccountId).Distinct();
+        var allPermissionKeys = (keys ?? intermediate.Select(c => c.Entry.Key)).Distinct();
+        var allAccountIds = (accountIds ?? intermediate.Select(c => c.AccountId)).Distinct();
 
         var product = allAccountIds.CartesianProduct(allPermissionKeys);
         foreach(var k in product)

@@ -135,7 +135,6 @@ public class BlobStoragePermissionStore_Tests_BasicFunctionality
         }
     }
 
-    // TODO: View Tests
     [Theory]
     [InlineData("/organizations/projects/blues-brothers", "acct_001", true)]
     [InlineData("/organizations/projects/blues-brothers", "acct_002", true)]
@@ -159,10 +158,7 @@ public class BlobStoragePermissionStore_Tests_BasicFunctionality
     [InlineData("/organizations/widgets", "acct_005", true)]
     public async Task All_accounts_retrieved_at_deep_scope(string scope, string acct, bool? isAllowed)
     {
-        var entries = (await Store.GetView(ScopePath.Parse(scope), includeRootScope: true).ToListAsync());
-        if (isAllowed == null)
-            Assert.DoesNotContain(entries, p => p.AccountId == acct && p.Entry.Key == BlobStorageFixture.P_READ && (p.Entry.IsAllowed == isAllowed));
-        else
-            Assert.Contains(entries, p => p.AccountId == acct && p.Entry.Key == BlobStorageFixture.P_READ && (p.Entry.IsAllowed == isAllowed));
+        var entries = (await Store.GetView(ScopePath.Parse(scope), includeRootScope: true, keys: [BlobStorageFixture.P_READ], accountIds: ["acct_001", "acct_002", "acct_003", "acct_004", "acct_005"]).ToListAsync());
+        Assert.Contains(entries, p => p.AccountId == acct && p.Entry.Key == BlobStorageFixture.P_READ && (p.Entry.IsAllowed == isAllowed));
     }
 }
