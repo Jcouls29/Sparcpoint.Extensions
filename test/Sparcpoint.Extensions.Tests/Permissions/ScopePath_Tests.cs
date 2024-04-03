@@ -169,4 +169,31 @@ public class ScopePath_Tests
 
         Assert.Equal(branch, leftScope.GetBranchPoint(rightScope));
     }
+
+    [Fact]
+    public void GetHierarchy_works_without_rootscope()
+    {
+        ScopePath path = "/Segment1/Cool2/Blue3/Red4/";
+        var hierarchy = path.GetHierarchy(includeRootScope: false);
+
+        Assert.Equal(4, hierarchy.Length);
+        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[0]);
+        Assert.Equal("/segment1/cool2/blue3", hierarchy[1]);
+        Assert.Equal("/segment1/cool2", hierarchy[2]);
+        Assert.Equal("/segment1", hierarchy[3]);
+    }
+
+    [Fact]
+    public void GetHierarchy_works_with_rootscope()
+    {
+        ScopePath path = "/Segment1/Cool2/Blue3/Red4/";
+        var hierarchy = path.GetHierarchy(includeRootScope: true);
+
+        Assert.Equal(5, hierarchy.Length);
+        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[0]);
+        Assert.Equal("/segment1/cool2/blue3", hierarchy[1]);
+        Assert.Equal("/segment1/cool2", hierarchy[2]);
+        Assert.Equal("/segment1", hierarchy[3]);
+        Assert.Equal("/", hierarchy[4]);
+    }
 }

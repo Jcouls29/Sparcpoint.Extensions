@@ -2,9 +2,6 @@
 
 public interface IPermissionStore
 {
-    IAccountPermissionCollection Get(string accountId, ScopePath? scope = null);
-    IScopePermissionCollection Get(ScopePath scope);
-
-    IAccountPermissionView GetView(string accountId, ScopePath? scope = null);
-    IScopePermissionView GetView(ScopePath scope);
+    IScopePermissionCollection Permissions { get; }
+    IScopePermissionView GetView(ScopePath scope, bool includeRootScope = false, string[]? keys = null, string[]? accountIds = null);
 }

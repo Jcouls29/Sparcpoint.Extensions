@@ -4,18 +4,22 @@ namespace Sparcpoint;
 
 public readonly struct ScopePath
 {
-    public string[] Segments { get; }
+    private readonly string[] _Segments = Array.Empty<string>();
+    public string[] Segments
+    {
+        get => _Segments ?? Array.Empty<string>();
+    }
     public bool IsRootScope => (this == RootScope);
     public int Rank => Segments.Length;
 
     public ScopePath()
     {
-        Segments = Array.Empty<string>();
+        _Segments = Array.Empty<string>();
     }
 
     public ScopePath(string[]? segments)
     {
-        Segments = segments ?? Array.Empty<string>();
+        _Segments = segments ?? Array.Empty<string>();
         ValidateSegments();
     }
 
@@ -29,67 +33,15 @@ public readonly struct ScopePath
             throw new InvalidOperationException("Segments cannot contain either a '\\' character or a '/' character.");
     }
 
-    public ScopePath Append(ScopePath other)
-    {
-        var finalSegments = Array.Empty<string>();
-        if (Segments.Length > 0)
-        {
-            finalSegments = Segments;
-        }
-
-        if (other.Segments.Length > 0)
-        {
-            finalSegments = finalSegments.Concat(other.Segments).ToArray();
-        }
-
-        return new ScopePath(finalSegments);
-    }
-
-    public ScopePath Back(int numberLevels = 1)
-    {
-        if (numberLevels < 0)
-            throw new ArgumentOutOfRangeException(nameof(numberLevels), "Number of levels to go back cannot be less than 0.");
-
-        if (numberLevels == 0)
-            return this;
-
-        if (Segments.Length <= numberLevels)
-            return ScopePath.RootScope;
-
-        return new ScopePath(Segments.Take(Segments.Length - numberLevels).ToArray());
-    }
-
-    public ScopePath GetBranchPoint(ScopePath other)
-    {
-        List<string> branch = new();
-
-        var enumerator1 = Segments.GetEnumerator();
-        var enumerator2 = other.Segments.GetEnumerator();
-
-        while(enumerator1.MoveNext())
-        {
-            var e1 = enumerator1.Current;
-            if (e1 == null)
-                break;
-
-            if (!enumerator2.MoveNext())
-                break;
-            var e2 = enumerator2.Current;
-            if (e2 == null || !e1.Equals(e2))
-                break;
-
-            branch.Add(e1.ToString()!);
-        }
-
-        return new ScopePath(branch.ToArray());
-    }
-
     public override int GetHashCode()
     {
         int code = 0;
 
-        foreach(var s in Segments)
-            code = HashCode.Combine(code, s.GetHashCode());
+        if (Segments != null)
+        {
+            foreach (var s in Segments)
+                code = HashCode.Combine(code, s.GetHashCode());
+        }
 
         return code;
     }
@@ -160,22 +112,22 @@ public readonly struct ScopePath
 
     public static bool operator <(ScopePath left, ScopePath right) 
     {
-        return SequenceStartsWith(right.Back(), left);
+        return right.Back().StartsWith(left);
     }
 
     public static bool operator >(ScopePath left, ScopePath right)
     {
-        return SequenceStartsWith(left.Back(), right);
+        return left.Back().StartsWith(right);
     }
 
     public static bool operator <=(ScopePath left, ScopePath right)
     {
-        return SequenceStartsWith(right, left);
+        return right.StartsWith(left);
     }
 
     public static bool operator >=(ScopePath left, ScopePath right)
     {
-        return SequenceStartsWith(left, right);
+        return left.StartsWith(right);
     }
 
     public static ScopePath operator &(ScopePath left, ScopePath right)
@@ -194,23 +146,4 @@ public readonly struct ScopePath
     }
 
     public static ScopePath RootScope { get; } = new ScopePath();
-
-    private static bool SequenceStartsWith(ScopePath sequence, ScopePath startsWith)
-    {
-        var itSequence = sequence.Segments.GetEnumerator();
-        var itStarts = startsWith.Segments.GetEnumerator();
-
-        while(itStarts.MoveNext())
-        {
-            var el = itStarts.Current;
-
-            if (!itSequence.MoveNext())
-                return false;
-
-            if (!el.Equals(itSequence.Current))
-                return false;
-        }
-
-        return true;
-    }
 }

@@ -8,7 +8,7 @@ public interface ISparcpointObject
     ScopePath Id { get; }
     string Name { get; set; }
 
-    IReadOnlyDictionary<string, string> GetProperties();
+    IReadOnlyDictionary<string, string?> GetProperties();
     string? GetProperty(string key);
-    void SetProperties(IReadOnlyDictionary<string, string> properties);
+    void SetProperties(IReadOnlyDictionary<string, string?> properties);
 }

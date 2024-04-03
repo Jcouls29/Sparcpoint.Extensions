@@ -23,17 +23,24 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
     public string AccountId { get; }
     public ScopePath CurrentScope { get; }
 
-    public Task SetAsync(string key, PermissionValue value, Dictionary<string, string>? metadata = null)
+    public Task SetRangeAsync(IEnumerable<PermissionEntry> entries)
     {
-        Assertions.NotEmptyOrWhitespace(key);
-
-        lock(_LockObject)
+        foreach(var e in entries)
         {
-            var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
-            if (found != null)
-                _Entries.Remove(found);
+            Ensure.ArgumentNotNullOrWhiteSpace(e.Key);
+        }
+        
 
-            _Entries.Add(new AccountPermissionEntry(AccountId, new PermissionEntry(key, value, CurrentScope, metadata)));
+        lock (_LockObject)
+        {
+            foreach(var e in entries)
+            {
+                var found = ScopedView.FirstOrDefault(c => c.Entry.Key == e.Key);
+                if (found != null)
+                    _Entries.Remove(found);
+
+                _Entries.Add(new AccountPermissionEntry(AccountId, CurrentScope, e));
+            }
         }
         
         return Task.CompletedTask;
@@ -53,17 +60,21 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
 
     public Task<bool> ContainsAsync(string key)
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
+
         var result = ScopedView.Any(k => k.Entry.Key == key);
         return Task.FromResult(result);
     }
 
-    public Task<PermissionEntry> GetAsync(string key)
+    public Task<PermissionEntry?> FindAsync(string key)
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(key);
+
         var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
         if (found == null)
-            throw new KeyNotFoundException($"Permission with key '{key}' not found.");
+            return Task.FromResult((PermissionEntry?)null);
 
-        return Task.FromResult(found.Entry);
+        return Task.FromResult((PermissionEntry?)found.Entry);
     }
 
     public IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
@@ -72,17 +83,25 @@ internal class InMemoryAccountPermissionCollection : IAccountPermissionCollectio
         return new SynchronousAsyncEnumerator<PermissionEntry>(view);
     }
 
-    public Task RemoveAsync(string key)
+    public Task RemoveAsync(IEnumerable<string> keys)
     {
-        lock(_LockObject)
+        foreach(var k in keys)
         {
-            var found = ScopedView.FirstOrDefault(c => c.Entry.Key == key);
-            if (found != null)
-                _Entries.Remove(found);
+            Ensure.ArgumentNotNullOrWhiteSpace(k);
+        }
+
+        lock (_LockObject)
+        {
+            foreach(var k in keys)
+            {
+                var found = ScopedView.FirstOrDefault(c => c.Entry.Key == k);
+                if (found != null)
+                    _Entries.Remove(found);
+            }
         }
 
         return Task.CompletedTask;
     }
 
-    private IEnumerable<AccountPermissionEntry> ScopedView => _Entries.Where(e => e.AccountId == AccountId && e.Entry.Scope == CurrentScope);
+    private IEnumerable<AccountPermissionEntry> ScopedView => _Entries.Where(e => e.AccountId == AccountId && e.Scope == CurrentScope);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInMemoryObjects(this IServiceCollection services)
     {
-        services.AddSingleton(new ObjectEntries());
-        services.AddSingleton(new LockObject());
-        services.AddSingleton(typeof(IObjectStore<>), typeof(InMemoryObjectStore<>));
-        services.AddSingleton(typeof(IObjectQuery<>), typeof(InMemoryObjectStore<>));
-        services.AddSingleton<IObjectQuery, InMemoryObjectQuery>();
-        services.AddSingleton<IObjectIdNameQuery, InMemoryObjectIdNameQuery>();
-
+        services.TryAddSingleton(new ObjectEntries());
+        services.TryAddSingleton(new LockObject());
+        services.TryAddSingleton(typeof(IObjectStore<>), typeof(InMemoryObjectStore<>));
+        services.TryAddSingleton(typeof(IObjectQuery<>), typeof(InMemoryObjectStore<>));
+        services.TryAddSingleton<IObjectQuery, InMemoryObjectQuery>();
+        services.TryAddSingleton<IObjectIdNameQuery, InMemoryObjectIdNameQuery>();
+        services.TryAddSingleton<IObjectStoreFactory, InMemoryObjectStoreFactory>();
+        
         return services;
     }
 }
