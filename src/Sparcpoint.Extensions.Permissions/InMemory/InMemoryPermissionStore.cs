@@ -29,9 +29,9 @@ internal class InMemoryPermissionStore : IPermissionStore, IAccountPermissionQue
         return new InMemoryAccountPermissionView(_Entries, _LockObject, accountId, scope ?? ScopePath.RootScope);
     }
 
-    public IScopePermissionView GetView(ScopePath scope)
+    public IScopePermissionView GetView(ScopePath scope, bool includeRootScope = false)
     {
-        return new InMemoryScopePermissionView(_Entries, _LockObject, scope);
+        return new InMemoryScopePermissionView(_Entries, scope, includeRootScope);
     }
 
     public async IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters)

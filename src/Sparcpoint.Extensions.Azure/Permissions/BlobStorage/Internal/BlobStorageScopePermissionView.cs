@@ -23,6 +23,8 @@ internal class BlobStorageScopePermissionView : IScopePermissionView
 
     public async IAsyncEnumerator<AccountPermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
+        await _Client.EnsureCreatedAsync();
+
         // 1. Load up all Entries
         List<AccountPermissionEntry> entries = new();
         await foreach(var scope in GetValidScopes())

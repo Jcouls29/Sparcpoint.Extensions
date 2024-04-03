@@ -1,6 +1,6 @@
 ﻿namespace Sparcpoint.Extensions.Azure.Permissions;
 
-public sealed class BlobStoragePermissionStoreViewOptions
+public sealed record BlobStoragePermissionStoreViewOptions
 {
     public bool IncludeRootScopeInCalculations { get; set; } = false;
 

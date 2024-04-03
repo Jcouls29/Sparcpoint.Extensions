@@ -20,9 +20,11 @@ public static class PermissionEntryExtensions
         return priorityEntry.Entry.Value;
     }
 
-    public static IEnumerable<AccountPermissionEntry> CalculateView(this IEnumerable<AccountPermissionEntry> entries, ScopePath scope)
+    public static IEnumerable<AccountPermissionEntry> CalculateView(this IEnumerable<AccountPermissionEntry> entries, ScopePath scope, bool includeRootScope = false)
     {
-        var intermediate = entries.Where(e => e.Scope <= scope).ToArray();
+        var intermediate = entries
+            .Where(e => e.Scope <= scope && (includeRootScope || e.Scope > ScopePath.RootScope))
+            .ToArray();
         var allPermissionKeys = intermediate.Select(c => c.Entry.Key).Distinct();
         var allAccountIds = intermediate.Select(c => c.AccountId).Distinct();
 

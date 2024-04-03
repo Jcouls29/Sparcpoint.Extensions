@@ -3,7 +3,8 @@ using Xunit.Abstractions;
 
 namespace Sparcpoint.Extensions.IntegrationTests;
 
-public class BlobStorageObjectStore_Query : IClassFixture<BlobStorageFixture>
+[Collection("Blob Storage")]
+public class BlobStorageObjectStore_Query
 {
     private readonly BlobStorageFixture _Fixture;
     private readonly ITestOutputHelper _Output;

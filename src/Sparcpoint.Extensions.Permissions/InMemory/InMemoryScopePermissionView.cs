@@ -5,21 +5,20 @@ namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 internal class InMemoryScopePermissionView : IScopePermissionView
 {
     private readonly List<AccountPermissionEntry> _Entries;
-    private readonly object _LockObject;
+    private readonly bool _IncludeRootScope;
 
-    public InMemoryScopePermissionView(List<AccountPermissionEntry> entries, object lockObject, ScopePath currentScope)
+    public InMemoryScopePermissionView(List<AccountPermissionEntry> entries, ScopePath currentScope, bool includeRootScope)
     {
         _Entries = entries;
-        _LockObject = lockObject;
-
         CurrentScope = currentScope;
+        _IncludeRootScope = includeRootScope;
     }
 
     public ScopePath CurrentScope { get; }
 
     public IAsyncEnumerator<AccountPermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var entries = _Entries.CalculateView(CurrentScope);
+        var entries = _Entries.CalculateView(CurrentScope, _IncludeRootScope);
         return new SynchronousAsyncEnumerator<AccountPermissionEntry>(entries.GetEnumerator());
     }
 }

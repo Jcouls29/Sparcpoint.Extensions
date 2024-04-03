@@ -32,9 +32,14 @@ internal class BlobStoragePermissionStore : IPermissionStore
         return new BlobStorageAccountPermissionView(_Client, accountId, scope, _Options.View ?? BlobStoragePermissionStoreViewOptions.Default, _Options.Filename);
     }
 
-    public IScopePermissionView GetView(ScopePath scope)
+    public IScopePermissionView GetView(ScopePath scope, bool includeRootScope = false)
     {
         _Client.CreateIfNotExists();
-        return new BlobStorageScopePermissionView(_Client, scope, _Options.View ?? BlobStoragePermissionStoreViewOptions.Default, _Options.Filename);
+
+        var options = _Options.View ?? new BlobStoragePermissionStoreViewOptions();
+        if (!options.IncludeRootScopeInCalculations && includeRootScope)
+            options = options with { IncludeRootScopeInCalculations = true };
+
+        return new BlobStorageScopePermissionView(_Client, scope, options, _Options.Filename);
     }
 }

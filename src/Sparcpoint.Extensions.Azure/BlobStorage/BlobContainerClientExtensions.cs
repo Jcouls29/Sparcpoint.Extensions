@@ -16,6 +16,25 @@ public static class BlobContainerClientExtensions
         await containerClient.CreateIfNotExistsAsync();
     }
 
+    public static async Task EnsureCreatedAsync(this BlobContainerClient client)
+    {
+        const int RETRY_COUNT = 3;
+
+        for (int i = 0; i < RETRY_COUNT; i++)
+        {
+            try
+            {
+                await client.CreateIfNotExistsAsync();
+                return;
+            } catch
+            {
+                await Task.Delay(250);
+            }
+        }
+
+        await client.CreateIfNotExistsAsync();
+    }
+
     public static async Task BulkDeleteAsync(this BlobContainerClient client, IEnumerable<string> blobNames)
     {
         // TODO: Atomicity

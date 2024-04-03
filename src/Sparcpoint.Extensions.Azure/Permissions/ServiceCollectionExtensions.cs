@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sparcpoint.Common.Initializers;
 using Sparcpoint.Extensions.Permissions;
 
 namespace Sparcpoint.Extensions.Azure.Permissions;
@@ -19,6 +20,8 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton<IPermissionStore>(new BlobStoragePermissionStore(client, options));
         services.TryAddSingleton<IAccountPermissionQuery>(new BlobStorageAccountPermissionQuery(client, options.Filename));
+        services.TryAddSingleton<IInitializerRunner, DefaultInitializerRunner>();
+        services.AddSingleton<IInitializer>(new EnsureContainerCreatedInitializer(client));
 
         return services;
     }

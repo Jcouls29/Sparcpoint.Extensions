@@ -4,8 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sparcpoint.Extensions.IntegrationTests;
 
+[Collection("Blob Storage")]
 public class BlobStorageObjectStore_Tests_BasicFunctionality
 {
+    private readonly BlobStorageFixture _Fixture;
+
+    public BlobStorageObjectStore_Tests_BasicFunctionality(BlobStorageFixture fixture)
+    {
+        _Fixture = fixture;
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -22,15 +30,7 @@ public class BlobStorageObjectStore_Tests_BasicFunctionality
     [Fact]
     public async Task Can_save_and_retrieve_all_field_types()
     {
-        var connectionString = "UseDevelopmentStorage=true";
-        var containerName = "objects";
-        var filename = ".object";
-
-        var services = new ServiceCollection();
-        services.AddBlobStorageObjects(new Azure.Objects.BlobStorage.BlobStorageObjectStoreOptions { ConnectionString = connectionString, ContainerName = containerName, Filename = filename });
-        var provider = services.BuildServiceProvider();
-
-        var service = provider.GetRequiredService<IObjectStore<AllPropertyTypesObject>>();
+        var service = _Fixture.Provider.GetRequiredService<IObjectStore<AllPropertyTypesObject>>();
 
         var id = ScopePath.Parse("/objects/samples/sample_123456789");
         var expected = new AllPropertyTypesObject

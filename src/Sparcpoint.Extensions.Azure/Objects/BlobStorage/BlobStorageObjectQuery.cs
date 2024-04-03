@@ -35,6 +35,8 @@ internal class BlobStorageObjectQuery : IObjectQuery
 
     public async IAsyncEnumerable<ISparcpointObject> RunAsync(ObjectQueryParameters parameters)
     {
+        await _Client.EnsureCreatedAsync();
+
         // 1. Find the Id, if specified
         if (parameters.Id != null)
         {

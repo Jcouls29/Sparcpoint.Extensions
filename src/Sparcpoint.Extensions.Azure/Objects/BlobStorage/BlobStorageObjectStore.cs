@@ -23,7 +23,7 @@ internal class BlobStorageObjectStore<T> : IObjectStore<T> where T : class, ISpa
 
     public async Task DeleteAsync(IEnumerable<ScopePath> ids)
     {
-        await _Client.CreateIfNotExistsAsync();
+        await _Client.EnsureCreatedAsync();
 
         var values = ids.Select(x => x.Append(_Options.Filename).ToString());
         await _Client.BulkDeleteAsync(values);
@@ -31,7 +31,7 @@ internal class BlobStorageObjectStore<T> : IObjectStore<T> where T : class, ISpa
 
     public async Task<T?> FindAsync(ScopePath id)
     {
-        await _Client.CreateIfNotExistsAsync();
+        await _Client.EnsureCreatedAsync();
 
         var blobName = id.Append(_Options.Filename);
         var bc = _Client.GetBlobClient(blobName);
@@ -41,7 +41,7 @@ internal class BlobStorageObjectStore<T> : IObjectStore<T> where T : class, ISpa
 
     public async Task UpsertAsync(IEnumerable<T> o)
     {
-        await _Client.CreateIfNotExistsAsync();
+        await _Client.EnsureCreatedAsync();
 
         // TODO: Atomicity?
         foreach (var x in o)

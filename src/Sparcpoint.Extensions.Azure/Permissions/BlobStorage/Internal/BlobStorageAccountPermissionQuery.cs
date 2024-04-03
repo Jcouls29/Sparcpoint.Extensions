@@ -18,7 +18,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     public async Task<bool> HasAccessAsync(string accountId, string key, ScopePath? scope = null)
     {
-        await _Client.CreateIfNotExistsAsync();
+        await _Client.EnsureCreatedAsync();
 
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
         Ensure.ArgumentNotNullOrWhiteSpace(key);
@@ -52,7 +52,7 @@ internal class BlobStorageAccountPermissionQuery : IAccountPermissionQuery
 
     public async IAsyncEnumerable<PermissionEntry> RunAsync(string accountId, PermissionQueryParameters parameters)
     {
-        await _Client.CreateIfNotExistsAsync();
+        await _Client.EnsureCreatedAsync();
 
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 

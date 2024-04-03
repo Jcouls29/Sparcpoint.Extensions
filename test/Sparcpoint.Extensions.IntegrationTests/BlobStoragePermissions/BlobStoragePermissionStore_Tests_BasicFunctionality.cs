@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace Sparcpoint.Extensions.IntegrationTests.BlobStoragePermissions;
 
-public class BlobStoragePermissionStore_Tests_BasicFunctionality : IClassFixture<BlobStorageFixture>
+[Collection("Blob Storage")]
+public class BlobStoragePermissionStore_Tests_BasicFunctionality
 {
     private readonly BlobStorageFixture _Fixture;
 
@@ -132,5 +133,36 @@ public class BlobStoragePermissionStore_Tests_BasicFunctionality : IClassFixture
         {
             Assert.False(await Collection.ContainsAsync(e));
         }
+    }
+
+    // TODO: View Tests
+    [Theory]
+    [InlineData("/organizations/projects/blues-brothers", "acct_001", true)]
+    [InlineData("/organizations/projects/blues-brothers", "acct_002", true)]
+    [InlineData("/organizations/projects/blues-brothers", "acct_003", true)]
+    [InlineData("/organizations/projects/blues-brothers", "acct_004", true)]
+    [InlineData("/organizations/projects/blues-brothers", "acct_005", true)]
+    [InlineData("/organizations", "acct_001", true)]
+    [InlineData("/organizations", "acct_002", true)]
+    [InlineData("/organizations", "acct_003", false)]
+    [InlineData("/organizations", "acct_004", null)]
+    [InlineData("/organizations", "acct_005", true)]
+    [InlineData("/", "acct_001", true)]
+    [InlineData("/", "acct_002", true)]
+    [InlineData("/", "acct_003", false)]
+    [InlineData("/", "acct_004", null)]
+    [InlineData("/", "acct_005", true)]
+    [InlineData("/organizations/widgets", "acct_001", true)]
+    [InlineData("/organizations/widgets", "acct_002", true)]
+    [InlineData("/organizations/widgets", "acct_003", false)]
+    [InlineData("/organizations/widgets", "acct_004", null)]
+    [InlineData("/organizations/widgets", "acct_005", true)]
+    public async Task All_accounts_retrieved_at_deep_scope(string scope, string acct, bool? isAllowed)
+    {
+        var entries = (await Store.GetView(ScopePath.Parse(scope), includeRootScope: true).ToListAsync());
+        if (isAllowed == null)
+            Assert.DoesNotContain(entries, p => p.AccountId == acct && p.Entry.Key == BlobStorageFixture.P_READ && (p.Entry.IsAllowed == isAllowed));
+        else
+            Assert.Contains(entries, p => p.AccountId == acct && p.Entry.Key == BlobStorageFixture.P_READ && (p.Entry.IsAllowed == isAllowed));
     }
 }

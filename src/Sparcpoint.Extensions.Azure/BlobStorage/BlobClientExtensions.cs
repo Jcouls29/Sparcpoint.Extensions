@@ -64,19 +64,17 @@ public static class BlobClientExtensions
 
     public static async Task UpdateAsJsonAsync<T>(this BlobClient client, Func<T?, Task<T?>> updater, JsonSerializerOptions? options = default, IDictionary<string, string>? tags = null)
     {
-        T? updatedValue = default;
-        ETag? originalETag = null;
-
         IDictionary<string, string>? optionTags = null;
         if (tags != null && tags.Count > 0)
             optionTags = tags;
 
+        T? updatedValue;
         if (await client.ExistsAsync())
         {
             var response = await client.DownloadContentAsync();
             var contents = response.Value.Content.ToString();
             T? originalValue = JsonSerializer.Deserialize<T>(contents);
-            originalETag = response.Value.Details.ETag;
+            ETag? originalETag = response.Value.Details.ETag;
             updatedValue = await updater(originalValue);
 
             if (updatedValue == null)
@@ -100,7 +98,7 @@ public static class BlobClientExtensions
         else
         {
             updatedValue = await updater(default);
-            
+
             // If we're still null then we do not need to do anything
             if (updatedValue == null)
                 return;

@@ -1,11 +1,17 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sparcpoint.Common.Initializers;
 using Sparcpoint.Extensions.Azure.Permissions;
+using Sparcpoint.Extensions.IntegrationTests;
 using Sparcpoint.Extensions.Permissions;
 using System.Reflection;
 
+
 namespace Sparcpoint.Extensions.IntegrationTests;
+
+[CollectionDefinition("Blob Storage")]
+public class BlobStorageCollection : ICollectionFixture<BlobStorageFixture> { }
 
 public class BlobStorageFixture : IAsyncLifetime
 {
@@ -17,6 +23,8 @@ public class BlobStorageFixture : IAsyncLifetime
 
     public IPermissionStore PermissionStore { get; }
     public IAccountPermissionQuery PermissionQuery { get; }
+
+    public IServiceProvider Provider { get; }
 
     private string ConnectionString { get; }
 
@@ -31,13 +39,13 @@ public class BlobStorageFixture : IAsyncLifetime
         var services = new ServiceCollection();
         services.AddBlobStorageObjects(new Azure.Objects.BlobStorage.BlobStorageObjectStoreOptions { ConnectionString = ConnectionString, ContainerName = "objects", Filename = ".object" });
         services.AddBlobStoragePermissions(new BlobStoragePermissionStoreOptions { ConnectionString = ConnectionString, ContainerName = "permissions", Filename = ".permissions" });
-        var provider = services.BuildServiceProvider();
+        Provider = services.BuildServiceProvider();
 
-        ObjectStore = provider.GetRequiredService<IObjectStore<BasicObject>>();
-        ObjectQuery = provider.GetRequiredService<IObjectQuery<BasicObject>>();
+        ObjectStore = Provider.GetRequiredService<IObjectStore<BasicObject>>();
+        ObjectQuery = Provider.GetRequiredService<IObjectQuery<BasicObject>>();
 
-        PermissionStore = provider.GetRequiredService<IPermissionStore>();
-        PermissionQuery = provider.GetRequiredService<IAccountPermissionQuery>();
+        PermissionStore = Provider.GetRequiredService<IPermissionStore>();
+        PermissionQuery = Provider.GetRequiredService<IAccountPermissionQuery>();
 
         SeedObjects();
         _Permissions = SeedPermissions().ToList();
@@ -68,6 +76,8 @@ public class BlobStorageFixture : IAsyncLifetime
         return ScopePermissionsBuilder.Create("\\")
             .Account("acct_001", b => b.Allow(P_READ).Deny(P_WRITE))
             .Account("acct_002", b => b.Allow(P_READ).Allow(P_WRITE))
+            .Account("acct_003", b => b.Deny(P_READ))
+            .Account("acct_005", b => b.Allow(P_READ))
             .Scope("/organizations", s => s
                 .Account("acct_001", b => b.Allow(P_READ).Deny(P_WRITE))
                 .Account("acct_002", b => b.Allow(P_READ).Allow(P_WRITE))
@@ -75,12 +85,17 @@ public class BlobStorageFixture : IAsyncLifetime
             .Scope("/organizations/projects/blues-brothers", s => s
                 .Account("acct_001", b => b.Allow(P_READ).Deny(P_WRITE))
                 .Account("acct_002", b => b.Allow(P_READ).Allow(P_WRITE))
+                .Account("acct_003", b => b.Allow(P_READ))
+                .Account("acct_004", b => b.Allow(P_READ))
             )
             .GetEntries();
     }
 
     public async Task DisposeAsync()
     {
+        var init = Provider.GetRequiredService<IInitializerRunner>();
+        await init.DisposeAsync();
+
         var containerA = new BlobContainerClient(ConnectionString, "objects");
         await containerA.DeleteIfExistsAsync();
 
@@ -90,6 +105,9 @@ public class BlobStorageFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        var init = Provider.GetRequiredService<IInitializerRunner>();
+        await init.RunAsync();
+
         await ObjectStore.UpsertAsync(_Objects);
         await PermissionStore.Permissions.SetRangeAsync(_Permissions);
 

@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sparcpoint.Common.Initializers;
 using Sparcpoint.Extensions.Azure.Objects.BlobStorage;
 using Sparcpoint.Extensions.Objects;
 using System;
@@ -22,6 +23,8 @@ public static class ServiceCollectionExtensions
 
         var containerClient = new BlobContainerClient(options.ConnectionString, options.ContainerName);
 
+        services.TryAddSingleton<IInitializerRunner, DefaultInitializerRunner>();
+        services.AddSingleton<IInitializer>(new EnsureContainerCreatedInitializer(containerClient));
         services.TryAddSingleton(typeof(IObjectStore<>), typeof(FactoryObjectStoreWrapper<>));
         services.TryAddSingleton(typeof(IObjectQuery<>), typeof(FactoryObjectQueryWrapper<>));
         services.WithChildServices<IObjectStoreFactory, BlobStorageObjectStoreFactory>(child =>

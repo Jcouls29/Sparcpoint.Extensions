@@ -18,6 +18,28 @@ public static class LinqExtensions
             }
         }
     }
+
+    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> values)
+    {
+        List<T> list = new();
+        await foreach(var value in values)
+        {
+            list.Add(value);
+        }
+
+        return list;
+    }
+
+    public static async Task<T[]> ToArrayAsync<T>(this IAsyncEnumerable<T> values)
+    {
+        List<T> list = new();
+        await foreach (var value in values)
+        {
+            list.Add(value);
+        }
+
+        return list.ToArray();
+    }
 }
 
 public struct CartesianProductEntry<T1, T2>

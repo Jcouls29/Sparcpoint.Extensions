@@ -26,6 +26,8 @@ internal class BlobStorageAccountPermissionView : IAccountPermissionView
 
     public async IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
+        await _Client.EnsureCreatedAsync();
+
         // 1. Load up all Entries
         List<AccountPermissionEntry> entries = new();
         await foreach (var scope in GetValidScopes())

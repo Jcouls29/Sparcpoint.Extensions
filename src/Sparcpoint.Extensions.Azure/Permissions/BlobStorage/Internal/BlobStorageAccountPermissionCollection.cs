@@ -23,7 +23,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
 
     public async Task ClearAsync()
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
@@ -45,7 +45,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
     {
         Ensure.ArgumentNotNullOrWhiteSpace(key);
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
@@ -58,7 +58,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
     {
         Ensure.ArgumentNotNullOrWhiteSpace(key);
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
@@ -73,7 +73,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
 
     public async IAsyncEnumerator<PermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var coll = await _Client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
         if (coll == null)
@@ -93,7 +93,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
             Ensure.ArgumentNotNullOrWhiteSpace(k);
         }
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
             if (coll == null)
@@ -119,7 +119,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
             Ensure.ArgumentNotNullOrWhiteSpace(e.Key);
         }
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
         await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
         {
             if (coll == null)

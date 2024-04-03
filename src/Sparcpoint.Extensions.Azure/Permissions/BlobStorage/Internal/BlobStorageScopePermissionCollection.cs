@@ -19,7 +19,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 
     public async Task ClearAsync()
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         await foreach(var client in GetAllPermissionBlobs())
         {
@@ -31,7 +31,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
     {
         EnsureEntryValid(entry);
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
         var client = GetScopeClient(entry.Scope);
         if (!await client.ExistsAsync())
             return false;
@@ -45,7 +45,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 
     public async IAsyncEnumerator<AccountPermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         await foreach(var client in GetAllPermissionBlobs())
         {
@@ -62,7 +62,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
     {
         EnsureEntriesValid(entries);
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var groups = entries.GroupBy(e => e.Scope);
         foreach(var scope in groups)
@@ -97,7 +97,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
     {
         EnsureEntriesValid(entries);
 
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var groups = entries.GroupBy(e => e.Scope);
 
@@ -123,7 +123,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 
     public async IAsyncEnumerable<AccountPermissionEntry> GetAsync(ScopePath scope)
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         var client = GetScopeClient(scope);
         var coll = await client.GetAsJsonAsync<List<AccountPermissionEntryDto>>();
@@ -143,7 +143,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
 
     private async IAsyncEnumerable<BlobClient> GetAllPermissionBlobs()
     {
-        await _ContainerClient.CreateIfNotExistsAsync();
+        await _ContainerClient.EnsureCreatedAsync();
 
         await foreach(var b in _ContainerClient.GetBlobsAsync())
         {
