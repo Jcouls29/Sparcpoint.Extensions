@@ -16,7 +16,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace}}/nuget
+  NuGetDirectory: ${{ github.workspace }}/nuget
 
 defaults:
   run:
@@ -76,7 +76,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
     - name: Run tests
-      run: dotnet test "~/test/Sparcpoint.Extensions.Tests/Sparcpoint.Extensions.Tests.csproj" --configuration Release
+      run: dotnet test "${{ github.workspace }}/test/Sparcpoint.Extensions.Tests/Sparcpoint.Extensions.Tests.csproj" --configuration Release
 
   deploy:
     # Publish only when creating a GitHub Release
