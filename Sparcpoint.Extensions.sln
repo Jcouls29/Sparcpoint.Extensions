@@ -12,16 +12,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CBDF54E0-9A8C-475A-964C-FDC40B475751}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
+		.github\workflows\main.yml = .github\workflows\main.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Permissions", "src\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj", "{DDDF74C8-BB03-4470-909F-BAB74B8F5FAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Objects", "src\Sparcpoint.Extensions.Objects\Sparcpoint.Extensions.Objects.csproj", "{8CCBEB61-E383-4008-A761-7B9E9C52B86B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Objects", "src\Sparcpoint.Extensions.Objects\Sparcpoint.Extensions.Objects.csproj", "{8CCBEB61-E383-4008-A761-7B9E9C52B86B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Common", "src\Sparcpoint.Common\Sparcpoint.Common.csproj", "{E156EE7F-1D75-4925-94A4-32F4367F6E30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Common", "src\Sparcpoint.Common\Sparcpoint.Common.csproj", "{E156EE7F-1D75-4925-94A4-32F4367F6E30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Azure", "src\Sparcpoint.Extensions.Azure\Sparcpoint.Extensions.Azure.csproj", "{1C759193-5577-434C-9BFB-5C4838A69FDD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Azure", "src\Sparcpoint.Extensions.Azure\Sparcpoint.Extensions.Azure.csproj", "{1C759193-5577-434C-9BFB-5C4838A69FDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.IntegrationTests", "test\Sparcpoint.Extensions.IntegrationTests\Sparcpoint.Extensions.IntegrationTests.csproj", "{10F67652-08D2-4AD2-8F80-F7925620040B}"
 EndProject
