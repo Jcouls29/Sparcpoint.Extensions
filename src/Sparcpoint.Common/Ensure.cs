@@ -39,4 +39,19 @@ public static class Ensure
         if (string.IsNullOrWhiteSpace(value))
             throw new InvalidOperationException($"{parameterName} is null or contains only whitespace.");
     }
+
+    public static void NotEqual(string expected, string actual, [CallerArgumentExpression(nameof(actual))] string? parameterName = null)
+    {
+        if (expected == actual)
+            throw new InvalidOperationException($"{parameterName} has an invalid value: {actual}.");
+    }
+
+    public static void NotValues(string[] expected, string actual, [CallerArgumentExpression(nameof(actual))] string? parameterName = null)
+    {
+        foreach(var value in expected)
+        {
+            if (value == actual)
+                throw new InvalidOperationException($"{parameterName} has an invalid value: {value}.");
+        }
+    }
 }
