@@ -4,7 +4,7 @@ namespace Sparcpoint.Extensions.Resources;
 
 public class SparcpointResourceEntry
 {
-    public SparcpointResourceEntry(ScopePath resourceId, string resourceType, AccountPermissions permissions)
+    public SparcpointResourceEntry(ScopePath resourceId, string resourceType, ResourcePermissions permissions)
     {
         ResourceId = resourceId;
         ResourceType = resourceType;
@@ -13,5 +13,5 @@ public class SparcpointResourceEntry
 
     public ScopePath ResourceId { get; }
     public string ResourceType { get; }
-    public AccountPermissions Permissions { get; }
+    public ResourcePermissions Permissions { get; }
 }

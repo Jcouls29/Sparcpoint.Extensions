@@ -46,6 +46,15 @@ public static class Ensure
             throw new InvalidOperationException($"{parameterName} has an invalid value: {actual}.");
     }
 
+    public static void NotEqual<T>(T expected, T actual, [CallerArgumentExpression(nameof(actual))] string? parameterName = null)
+    {
+        if (expected == null && actual == null)
+            return;
+
+        if (expected == null || expected.Equals(actual))
+            throw new InvalidOperationException($"{parameterName} has an invalid value.");
+    }
+
     public static void NotValues(string[] expected, string actual, [CallerArgumentExpression(nameof(actual))] string? parameterName = null)
     {
         foreach(var value in expected)

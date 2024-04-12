@@ -1,15 +1,19 @@
-﻿using Sparcpoint.Extensions.Permissions;
+﻿using System.Text.Json.Serialization;
 
 namespace Sparcpoint.Extensions.Resources;
 
-public class SparcpointResource<T>
+public abstract class SparcpointResource
 {
-    public SparcpointResource(T data, AccountPermissions permissions)
-    {
-        Data = data;
-        Permissions = permissions;
-    }
+    [ResourceId, JsonIgnore]
+    public ScopePath ResourceId { get; set; }
+    [ResourcePermissions, JsonIgnore]
+    public ResourcePermissions Permissions { get; set; } = new();
 
-    public T Data { get; }
-    public AccountPermissions Permissions { get; }
+    public string ResourceType => ResourceTypeAttribute.GetResourceType(this.GetType());
+    public string Name => ResourceId.Segments.Last();
+
+    public DateTime CreatedTimestamp { get; set; } = DateTime.UtcNow;
+
+    public static implicit operator ScopePath(SparcpointResource resource)
+        => resource.ResourceId;
 }

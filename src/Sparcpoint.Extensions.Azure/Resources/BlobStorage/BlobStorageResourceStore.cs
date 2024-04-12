@@ -24,7 +24,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             _Client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task Delete(params ScopePath[] resourceIds)
+        public async Task DeleteAsync(params ScopePath[] resourceIds)
         {
             foreach (var rid in resourceIds)
             {
@@ -43,7 +43,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             }
         }
 
-        public async Task<T?> Get<T>(ScopePath resourceId) where T : SparcpointResource
+        public async Task<T?> GetAsync<T>(ScopePath resourceId) where T : SparcpointResource
         {
             T? data = await GetData<T>(resourceId);
             if (data == null)
@@ -57,7 +57,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             return data;
         }
 
-        public async Task<IEnumerable<SparcpointResourceEntry>> GetChildEntries(ScopePath parentResourceId, int maxDepth = 1, string[]? includeTypes = null)
+        public async Task<IEnumerable<SparcpointResourceEntry>> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = 1, string[]? includeTypes = null)
         {
             var prefix = parentResourceId.ToString() + "/";
             var checkTypes = (includeTypes != null && includeTypes.Any());
@@ -89,7 +89,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             return entries;
         }
 
-        public async Task Set<T>(T data, params ScopePath[] resourceIds) where T : SparcpointResource
+        public async Task SetAsync<T>(T data) where T : SparcpointResource
         {
             string resourceType = ResourceTypeAttribute.GetResourceType(data.GetType());
             var tags = new Dictionary<string, string>
@@ -97,16 +97,17 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
                 [RESOURCE_TYPE_KEY] = resourceType,
             };
 
-            foreach(var rid in resourceIds)
-            {
-                var dataPath = GetDataPath(rid);
-                var client = _Client.GetBlobClient(dataPath);
-                await client.UpdateAsJsonAsync(data, tags: tags);
+            var resourceId = data.ResourceId;
+            Ensure.NotNullOrWhiteSpace(resourceId);
+            Ensure.NotEqual(ScopePath.RootScope, resourceId);
 
-                var permissionsPath = GetPermissionsPath(rid);
-                client = _Client.GetBlobClient(permissionsPath);
-                await client.UpdateAsJsonAsync(data.Permissions ?? new());
-            }
+            var dataPath = GetDataPath(resourceId);
+            var client = _Client.GetBlobClient(dataPath);
+            await client.UpdateAsJsonAsync(data, tags: tags);
+
+            var permissionsPath = GetPermissionsPath(resourceId);
+            client = _Client.GetBlobClient(permissionsPath);
+            await client.UpdateAsJsonAsync(data.Permissions ?? new());
         }
 
         private ScopePath GetDataPath(ScopePath resourceId)
@@ -115,7 +116,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             => await _Client.GetBlobClient(GetDataPath(resourceId)).GetAsJsonAsync<T>();
         private ScopePath GetPermissionsPath(ScopePath resourceId)
             => resourceId + PERMISSIONS_FILENAME;
-        private async Task<AccountPermissions> GetPermissions(ScopePath resourceId)
-            => (await _Client.GetBlobClient(GetPermissionsPath(resourceId)).GetAsJsonAsync<AccountPermissions>()) ?? new();
+        private async Task<ResourcePermissions> GetPermissions(ScopePath resourceId)
+            => (await _Client.GetBlobClient(GetPermissionsPath(resourceId)).GetAsJsonAsync<ResourcePermissions>()) ?? new();
     }
 }
