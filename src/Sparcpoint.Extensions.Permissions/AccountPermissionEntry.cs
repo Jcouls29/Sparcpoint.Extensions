@@ -1,5 +1,7 @@
 ﻿namespace Sparcpoint.Extensions.Permissions;
 
+public class AccountPermissions : List<AccountPermissionEntry> { }
+
 public record AccountPermissionEntry
 {
     public const string ALL_ACCOUNTS_ID = "*";

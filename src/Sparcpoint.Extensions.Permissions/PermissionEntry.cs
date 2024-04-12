@@ -1,5 +1,7 @@
 ﻿namespace Sparcpoint.Extensions.Permissions;
 
+public class Permissions : List<PermissionEntry> { }
+
 public record PermissionEntry
 {
     public PermissionEntry(string key, PermissionValue value, Dictionary<string, string>? metadata = null)
