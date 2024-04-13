@@ -2,6 +2,8 @@
 
 public static class CommonPermissions
 {
-    public const string CanRead = "read";
-    public const string CanWrite = "write";
+    public const string CanReadData = "read:data";
+    public const string CanWriteData = "write:data";
+    public const string CanReadPermissions = "read:permissions";
+    public const string CanWritePermissions = "write:permissions";
 }

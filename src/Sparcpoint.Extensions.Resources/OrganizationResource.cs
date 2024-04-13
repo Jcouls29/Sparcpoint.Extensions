@@ -10,5 +10,9 @@ public sealed class OrganizationResource : SparcpointResource
 
 public static class Organization
 {
-    // TODO: Create a new organization...
+    public static async Task<OrganizationResource> CreateNewOrganizationAsync(this IResourceStore store, string accountId, string subscriptionName, string displayName)
+    {
+        // TODO: More flexible, predicatable way to generate the subscription name
+        ScopePath resourceId = string.Format(OrganizationResource.RESOURCE_FORMAT, subscriptionName, Guid.NewGuid().ToString());
+    }
 }

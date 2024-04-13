@@ -17,3 +17,8 @@ public abstract class SparcpointResource
     public static implicit operator ScopePath(SparcpointResource resource)
         => resource.ResourceId;
 }
+
+public class SparcpointResource<T> : SparcpointResource where T : class, new()
+{
+    public T Data { get; set; } = new();
+}

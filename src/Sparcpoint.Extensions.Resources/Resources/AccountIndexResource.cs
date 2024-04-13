@@ -27,7 +27,7 @@ public static class AccountIndex
             found = new AccountIndexResource
             {
                 ResourceId = resourceId,
-                Permissions = ResourcePermissions.With(accountId, b => b.CanRead().CanWrite()),
+                Permissions = ResourcePermissions.With(accountId, b => b.CanReadData().CanWriteData()),
             };
             await store.SetAsync(found);
         }
@@ -42,6 +42,12 @@ public static class AccountIndex
 
         var index = await store.GetAccountIndexAsync(accountId);
         return index.Resources.Where(r => r.ResourceType == resourceType).ToArray();
+    }
+
+    public static async Task<IEnumerable<AccountIndexEntry>> GetAccountIndexByResourceType<T>(this IResourceStore store, string accountId) where T : SparcpointResource
+    {
+        var resourceType = ResourceTypeAttribute.GetResourceType(typeof(T));
+        return await GetAccountIndexByResourceType(store, accountId, resourceType);
     }
 
     public static async Task AddToIndexAsync(this IResourceStore store, string accountId, params AccountIndexEntry[] entries)

@@ -11,5 +11,5 @@ public class ResourcePermissions : List<ResourcePermissionEntry>
     }
 
     public static ResourcePermissions WithOwnerPermissions(string accountId)
-        => With(accountId, (b) => b.CanRead().CanWrite());
+        => With(accountId, (b) => b.CanReadData().CanWriteData().CanReadPermissions().CanWritePermissions());
 }

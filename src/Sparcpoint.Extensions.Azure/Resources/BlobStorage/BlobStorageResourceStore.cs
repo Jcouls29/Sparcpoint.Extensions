@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
 {
+    // TODO: MUST IMPLEMENT PERMISSION-CHECKER INTERFACE TO ENSURE WE'RE ONLY ALLOWED TO ALTER
+    //       THE APPROPRIATE RESOURCES
     internal class BlobStorageResourceStore : IResourceStore
     {
         private const string DATA_FILENAME = ".data";

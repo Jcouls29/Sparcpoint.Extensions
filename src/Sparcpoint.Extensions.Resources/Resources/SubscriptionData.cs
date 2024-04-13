@@ -1,7 +1,7 @@
 ﻿namespace Sparcpoint.Extensions.Resources;
 
 [ResourceType("Sparcpoint.Subscription")]
-public sealed class SubscriptionResource : SparcpointResource
+public sealed record SubscriptionData
 {
     public const string RESOURCE_FORMAT = "/subscriptions/{0}";
 
@@ -11,7 +11,7 @@ public sealed class SubscriptionResource : SparcpointResource
 
 public static class Subscription
 {
-    public static async Task<SubscriptionResource> CreateNewSubscriptionAsync(this IResourceStore store, string accountId, string displayName)
+    public static async Task<ISubscriptionClient> CreateNewSubscriptionAsync(this IResourceStore store, string accountId, string displayName)
     {
         // TODO: More flexible, predictable way to generate the subscription name
         ScopePath resourceId = string.Format(SubscriptionResource.RESOURCE_FORMAT, Guid.NewGuid().ToString());

@@ -26,6 +26,16 @@ public class ResourceTypeAttribute : Attribute
             return attr.ResourceType.Trim();
         }
 
+        if (type.IsGenericType)
+        {
+            Type genericTypeDef = type.GetGenericTypeDefinition();
+            if (genericTypeDef == typeof(SparcpointResource<>))
+            {
+                Type[] genericArgs = type.GetGenericArguments();
+                return GetResourceType(genericArgs[0]);
+            }
+        }
+
         throw new InvalidOperationException("All Sparcpoint resource types must be decoarted with ResourceTypeAttribute.");
     }
 }
