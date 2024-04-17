@@ -27,7 +27,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
 
-    <VersionPrefix>1.4.0</VersionPrefix>
+    <VersionPrefix>1.5.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,6 +55,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sparcpoint.Extensions.Objects\Sparcpoint.Extensions.Objects.csproj" />
     <ProjectReference Include="..\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
+    <ProjectReference Include="..\Sparcpoint.Extensions.Resources\Sparcpoint.Extensions.Resources.csproj" />
   </ItemGroup>
 
 

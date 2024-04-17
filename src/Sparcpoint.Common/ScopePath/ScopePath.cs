@@ -2,7 +2,7 @@
 
 namespace Sparcpoint;
 
-public readonly struct ScopePath
+public readonly struct ScopePath : IEquatable<ScopePath>, IComparable<ScopePath>
 {
     private readonly string[] _Segments = Array.Empty<string>();
     public string[] Segments
@@ -99,6 +99,23 @@ public readonly struct ScopePath
         result = new ScopePath(split);
         return true;
     }
+
+    public int CompareTo(ScopePath other)
+    {
+        if (this == other)
+            return 0;
+
+        if (this < other)
+            return -1;
+
+        if (this > other)
+            return 1;
+
+        return this.ToString().CompareTo(other.ToString());
+    }
+
+    public bool Equals(ScopePath other)
+        => (this == other);
 
     public static implicit operator ScopePath(string path)
     {

@@ -9,14 +9,14 @@
     <Authors>Justin Coulston</Authors>
     <Company>Sparcpoint, LLC</Company>
     <Product>Sparcpoint Extensions</Product>
-    <Description>Permissions module for managing and checking permissions</Description>
+    <Description>Module to manage data resources</Description>
     <Copyright>(c) 2024 Sparcpoint, LLC</Copyright>
     <PackageProjectUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.Permissions</PackageTags>
-    <PackageReleaseNotes>Permissions</PackageReleaseNotes>
+    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.Resources</PackageTags>
+    <PackageReleaseNotes>Resources</PackageReleaseNotes>
     <EnablePackageValidation>true</EnablePackageValidation>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -35,10 +35,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Assembly\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -50,7 +46,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Slugify.Core" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sparcpoint.Common\Sparcpoint.Common.csproj" />
+    <ProjectReference Include="..\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
   </ItemGroup>
 
 </Project>

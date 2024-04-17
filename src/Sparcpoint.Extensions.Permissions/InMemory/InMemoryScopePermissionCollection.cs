@@ -1,5 +1,6 @@
 ﻿namespace Sparcpoint.Extensions.Permissions.Services.InMemory;
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 internal class InMemoryScopePermissionCollection : IScopePermissionCollection
 {
     private readonly List<AccountPermissionEntry> _Entries;
@@ -29,7 +30,9 @@ internal class InMemoryScopePermissionCollection : IScopePermissionCollection
         return Task.FromResult(result);
     }
 
+
     public async IAsyncEnumerator<AccountPermissionEntry> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+
     {
         foreach(var e in _Entries)
         {
@@ -101,3 +104,4 @@ internal class InMemoryScopePermissionCollection : IScopePermissionCollection
         return new InMemoryAccountPermissionCollection(_Entries, _LockObject, accountId, scope ??  ScopePath.RootScope);
     }
 }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
