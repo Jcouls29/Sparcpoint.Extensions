@@ -44,10 +44,10 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
             yield return _Factory.Create<TChild>(item.ResourceId);
     }
 
-    public async Task<ResourcePermissions?> GetPermissionsAsync()
+    public async Task<ResourcePermissions> GetPermissionsAsync()
     {
         var found = await _Store.GetAsync<SparcpointResource<T>>(ResourceId);
-        return found?.Permissions;
+        return found?.Permissions ?? new();
     }
 
     public async Task SaveAsync(T data)

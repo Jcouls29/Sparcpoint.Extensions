@@ -38,7 +38,7 @@ internal class DefaultOrganizationClient : IOrganizationClient
     public IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new()
         => _Client.GetChildClient<TChild>(relativePath);
 
-    public async Task<ResourcePermissions?> GetPermissionsAsync()
+    public async Task<ResourcePermissions> GetPermissionsAsync()
         => await _Client.GetPermissionsAsync();
 
     public async Task SaveAsync(OrganizationData data)

@@ -189,7 +189,7 @@ public class BlobStorageObjectStore_Query
     [InlineData("My Project", 4)]
     [InlineData("Other Project", 1)]
     [InlineData(null, 1)]
-    public async Task WithPropertiesOnly(string value, int count)
+    public async Task WithPropertiesOnly(string? value, int count)
     {
         var found = await _Fixture.ObjectQuery.ToListAsync(new ObjectQueryParameters
         {

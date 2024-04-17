@@ -25,19 +25,19 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
     {
         await _ContainerClient.EnsureCreatedAsync();
 
-        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>((coll) =>
         {
             if (coll == null)
-                return null;
+                return Task.FromResult<List<AccountPermissionEntryDto>?>(null);
 
             var found = coll.Where(e => e.AccountId == AccountId).ToArray();
             foreach (var f in found)
                 coll.Remove(f);
 
             if (!coll.Any())
-                return null;
+                return Task.FromResult<List<AccountPermissionEntryDto>?>(null);
 
-            return coll;
+            return Task.FromResult<List<AccountPermissionEntryDto>?>(coll);
         });
     }
 
@@ -94,12 +94,12 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
         }
 
         await _ContainerClient.EnsureCreatedAsync();
-        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>((coll) =>
         {
             if (coll == null)
-                return null;
+                return Task.FromResult<List<AccountPermissionEntryDto>?>(null);
 
-            foreach(var k in keys)
+            foreach (var k in keys)
             {
                 var found = coll.Where(e => e.AccountId == AccountId && e.Key == k).ToArray();
                 foreach (var f in found)
@@ -108,7 +108,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
                 }
             }
 
-            return coll;
+            return Task.FromResult<List<AccountPermissionEntryDto>?>(coll);
         });
     }
 
@@ -120,7 +120,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
         }
 
         await _ContainerClient.EnsureCreatedAsync();
-        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+        await _Client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>((coll) =>
         {
             if (coll == null)
                 coll = new List<AccountPermissionEntryDto>();
@@ -140,7 +140,7 @@ internal class BlobStorageAccountPermissionCollection : IAccountPermissionCollec
                 found.Metadata = e.Metadata ?? new();
             }
 
-            return coll;
+            return Task.FromResult<List<AccountPermissionEntryDto>?>(coll);
         });
     }
 }

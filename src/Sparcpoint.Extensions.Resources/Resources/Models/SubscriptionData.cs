@@ -3,8 +3,8 @@
 [ResourceType("Sparcpoint.Subscription")]
 public sealed record SubscriptionData
 {
-    public string OwnerAccountId { get; set; }
-    public string DisplayName { get; set; }
+    public string OwnerAccountId { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
 
     private const string RESOURCE_FORMAT = "/subscriptions/{0}";
     internal static ScopePath CreateResourceId(string name)

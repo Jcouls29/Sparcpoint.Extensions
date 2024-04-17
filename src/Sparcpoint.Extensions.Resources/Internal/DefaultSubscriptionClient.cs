@@ -32,7 +32,7 @@ internal class DefaultSubscriptionClient : ISubscriptionClient
     public async Task<SubscriptionData?> GetAsync()
         => await _Client.GetAsync();
 
-    public async Task<ResourcePermissions?> GetPermissionsAsync()
+    public async Task<ResourcePermissions> GetPermissionsAsync()
         => await _Client.GetPermissionsAsync();
 
     public async Task SaveAsync(SubscriptionData data)

@@ -68,7 +68,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
         foreach(var scope in groups)
         {
             var client = GetScopeClient(scope.Key);
-            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>((coll) =>
             {
                 if (coll == null)
                     coll = new List<AccountPermissionEntryDto>();
@@ -88,7 +88,7 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
                     found.Metadata = item.Entry.Metadata ?? new();
                 }
 
-                return coll;
+                return Task.FromResult<List<AccountPermissionEntryDto>?>(coll);
             });
         }
     }
@@ -104,19 +104,19 @@ internal class BlobStorageScopePermissionCollection : IScopePermissionCollection
         foreach(var scope in groups)
         {
             var client = GetScopeClient(scope.Key);
-            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>(async (coll) =>
+            await client.UpdateAsJsonAsync<List<AccountPermissionEntryDto>>((coll) =>
             {
                 if (coll == null)
-                    return null;
+                    return Task.FromResult<List<AccountPermissionEntryDto>?>(null);
 
-                foreach(var item in scope)
+                foreach (var item in scope)
                 {
                     var found = coll.Where(e => e.AccountId == item.AccountId && e.Key == item.Entry.Key).ToArray();
                     foreach (var f in found)
                         coll.Remove(f);
                 }
 
-                return coll;
+                return Task.FromResult<List<AccountPermissionEntryDto>?>(coll);
             });
         }
     }

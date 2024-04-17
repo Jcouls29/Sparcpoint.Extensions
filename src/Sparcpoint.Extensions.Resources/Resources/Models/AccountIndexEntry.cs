@@ -2,6 +2,6 @@
 
 public class AccountIndexEntry
 {
-    public string ResourceType { get; set; }
-    public string ResourceId { get; set; }
+    public string ResourceType { get; set; } = string.Empty;
+    public string ResourceId { get; set; } = string.Empty;
 }
