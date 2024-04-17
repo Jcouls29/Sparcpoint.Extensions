@@ -115,7 +115,9 @@ public readonly struct ScopePath : IEquatable<ScopePath>, IComparable<ScopePath>
     }
 
     public bool Equals(ScopePath other)
-        => (this == other);
+    {
+        return Segments.SequenceEqual(other.Segments);
+    }
 
     public static implicit operator ScopePath(string path)
     {
