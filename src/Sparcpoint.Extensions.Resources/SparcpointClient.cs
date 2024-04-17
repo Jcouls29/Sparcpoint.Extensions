@@ -46,4 +46,7 @@ public class SparcpointClient : ISparcpointClient
             yield return new DefaultSubscriptionClient(_Store, _Factory, _Factory.Create<SubscriptionData>(entry.ResourceId), _AccountId);
         }
     }
+
+    public IResourceDataClient<T> GetResourceClient<T>(ScopePath resourceId) where T : class, new()
+        => _Factory.Create<T>(resourceId);
 }
