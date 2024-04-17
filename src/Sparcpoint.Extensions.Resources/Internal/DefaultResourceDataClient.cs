@@ -1,12 +1,19 @@
-﻿namespace Sparcpoint.Extensions.Resources;
+﻿
+namespace Sparcpoint.Extensions.Resources;
 
 internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : class, new()
 {
     private readonly IResourceStore _Store;
+    private readonly IResourceDataClientFactory _Factory;
 
-    public DefaultResourceDataClient(IResourceStore store, ScopePath resourceId)
+    public DefaultResourceDataClient(IResourceStore store, IResourceDataClientFactory factory, ScopePath resourceId)
     {
-        _Store = store ?? throw new ArgumentNullException(nameof(store));
+        Ensure.ArgumentNotNull(_Store);
+        Ensure.ArgumentNotNull(factory);
+        Ensure.NotEqual(ScopePath.RootScope, resourceId);
+
+        _Store = store;
+        _Factory = factory;
         ResourceId = resourceId;
     }
 
@@ -21,6 +28,20 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
     {
         var found = await _Store.GetAsync<SparcpointResource<T>>(ResourceId);
         return found?.Data;
+    }
+
+    public IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new()
+    {
+        var resourceId = ResourceId + relativePath;
+        return _Factory.Create<TChild>(resourceId);
+    }
+
+    public async IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = 2) where TChild : class, new()
+    {
+        var resourceType = ResourceTypeAttribute.GetResourceType<TChild>();
+        var found = _Store.GetChildEntriesAsync(ResourceId, maxDepth, includeTypes: new[] { resourceType });
+        await foreach (var item in found)
+            yield return _Factory.Create<TChild>(item.ResourceId);
     }
 
     public async Task<ResourcePermissions?> GetPermissionsAsync()

@@ -12,6 +12,9 @@ public class ResourceTypeAttribute : Attribute
 
     public string ResourceType { get; }
 
+    public static string GetResourceType<T>()
+        => GetResourceType(typeof(T));
+
     public static string GetResourceType(Type? type)
     {
         if (type == null)

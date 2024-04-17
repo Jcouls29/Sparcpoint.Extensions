@@ -6,6 +6,7 @@ using Sparcpoint.Extensions.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -59,12 +60,11 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             return data;
         }
 
-        public async Task<IEnumerable<SparcpointResourceEntry>> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = 1, string[]? includeTypes = null)
+        public async IAsyncEnumerable<SparcpointResourceEntry> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = 1, string[]? includeTypes = null)
         {
             var prefix = parentResourceId.ToString() + "/";
             var checkTypes = (includeTypes != null && includeTypes.Any());
 
-            List<SparcpointResourceEntry> entries = new();
             await foreach(var blob in _Client.GetBlobsAsync(traits: BlobTraits.Tags, prefix: prefix))
             {
                 if (!blob.Name.EndsWith(DATA_FILENAME))
@@ -85,10 +85,8 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
                     continue;
 
                 var permissions = await GetPermissions(resourceId);
-                entries.Add(new SparcpointResourceEntry(resourceId, resourceType, permissions));
+                yield return new SparcpointResourceEntry(resourceId, resourceType, permissions);
             }
-
-            return entries;
         }
 
         public async Task SetAsync<T>(T data) where T : SparcpointResource
@@ -120,5 +118,21 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             => resourceId + PERMISSIONS_FILENAME;
         private async Task<ResourcePermissions> GetPermissions(ScopePath resourceId)
             => (await _Client.GetBlobClient(GetPermissionsPath(resourceId)).GetAsJsonAsync<ResourcePermissions>()) ?? new();
+
+        public async Task<bool> ExistsAsync(ScopePath resourceId, string? resourceType = null)
+        {
+            var dataPath = GetDataPath(resourceId);
+            var client = _Client.GetBlobClient(dataPath);
+
+            var exists = await client.ExistsAsync();
+            if (!exists || resourceType == null)
+                return exists;
+
+            var tags = (await client.GetTagsAsync()).Value?.Tags;
+            if (tags == null || !tags.TryGetValue(RESOURCE_TYPE_KEY, out string? actualResourceType) || actualResourceType == null)
+                return false;
+
+            return resourceType.Equals(actualResourceType);
+        }
     }
 }

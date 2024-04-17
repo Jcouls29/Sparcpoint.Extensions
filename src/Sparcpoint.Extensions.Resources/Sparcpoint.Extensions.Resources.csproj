@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Slugify.Core" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sparcpoint.Common\Sparcpoint.Common.csproj" />
     <ProjectReference Include="..\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
   </ItemGroup>
