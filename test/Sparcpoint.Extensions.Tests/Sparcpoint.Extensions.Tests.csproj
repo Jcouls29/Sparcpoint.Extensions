@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\Sparcpoint.Common\Sparcpoint.Common.csproj" />
     <ProjectReference Include="..\..\src\Sparcpoint.Extensions.DependencyInjection\Sparcpoint.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\Sparcpoint.Extensions.Permissions\Sparcpoint.Extensions.Permissions.csproj" />
+    <ProjectReference Include="..\..\src\Sparcpoint.Extensions.Resources\Sparcpoint.Extensions.Resources.csproj" />
   </ItemGroup>
 
   <ItemGroup>

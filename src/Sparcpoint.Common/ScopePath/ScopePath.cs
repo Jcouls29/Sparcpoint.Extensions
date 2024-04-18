@@ -154,6 +154,46 @@ public readonly struct ScopePath : IEquatable<ScopePath>, IComparable<ScopePath>
         return left.Append(right);
     }
 
+    public static ScopePath operator +(ScopePath left, ScopePath right)
+    {
+        return left.Append(right);
+    }
+
+    /// <summary>
+    /// This method subtracts the smaller path from the larger path.
+    /// </summary>
+    /// <param name="left"></param>
+    /// <param name="right"></param>
+    /// <remarks>
+    /// When the paths are the same, The root scope is returned.
+    /// Otherwise an attempt is made to subtract the smaller path from the larger path returning only the difference.
+    /// This method returns a difference between the two. However, this only works if the smaller path is fully within
+    /// the larger path. When they branch at a point, only the branch is removed from the larger path.
+    /// </remarks>
+    public static ScopePath operator -(ScopePath left, ScopePath right)
+    {
+        if (left == right)
+            return ScopePath.RootScope;
+
+        var l = left;
+        var r = right;
+
+        if (left.Rank < right.Rank)
+        {
+            r = left;
+            l = right;
+        }
+
+        if (l.StartsWith(r))
+            return new ScopePath(l.Segments.Skip(r.Rank).ToArray());
+
+        var branch = l.GetBranchPoint(r);
+        if (branch.Rank > 0)
+            return new ScopePath(l.Segments.Skip(branch.Rank).ToArray());
+
+        return l;
+    }
+
     public static bool operator ==(ScopePath left, ScopePath right)
     {
         return left.Equals(right);

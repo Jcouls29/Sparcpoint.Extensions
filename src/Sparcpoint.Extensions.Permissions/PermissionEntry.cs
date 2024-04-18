@@ -26,5 +26,5 @@ public record PermissionEntry
     public static PermissionEntry Deny(string key, Dictionary<string, string>? metadata = null)
         => Create(key, PermissionValue.Deny, metadata);
 
-    public static PermissionEntry Empty = new PermissionEntry(string.Empty, PermissionValue.None, null);
+    public static PermissionEntry Empty = new PermissionEntry("None", PermissionValue.None, null);
 }

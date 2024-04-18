@@ -15,5 +15,5 @@ public interface IResourceStore
     Task DeleteAsync(params ScopePath[] resourceIds);
     Task<bool> ExistsAsync(ScopePath resourceId, string? resourceType = null);
 
-    IAsyncEnumerable<SparcpointResourceEntry> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = 2, string[]? includeTypes = null);
+    IAsyncEnumerable<SparcpointResourceEntry> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = int.MaxValue, string[]? includeTypes = null);
 }
