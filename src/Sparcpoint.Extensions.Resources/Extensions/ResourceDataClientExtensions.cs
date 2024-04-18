@@ -20,7 +20,17 @@ public static class ResourceDataClientExtensions
         return client;
     }
 
-    public static async IAsyncEnumerable<SparcpointResourceDisplayEntry> ListChildrenAsync<TChild>(this IResourceDataClient parent, Func<TChild, string> displayValueFunc, int maxDepth = 2)
+    public static async IAsyncEnumerable<TChild> GetChildrenAsync<TChild>(this IResourceDataClient parent, int maxDepth = int.MaxValue) where TChild : class, new()
+    {
+        await foreach(var item in parent.GetChildClientsAsync<TChild>(maxDepth))
+        {
+            var data = await item.GetAsync();
+            if (data != null)
+                yield return data;
+        }
+    }
+
+    public static async IAsyncEnumerable<SparcpointResourceDisplayEntry> ListChildrenAsync<TChild>(this IResourceDataClient parent, Func<TChild, string> displayValueFunc, int maxDepth = int.MaxValue)
         where TChild : class, new()
     {
         var resourceType = ResourceTypeAttribute.GetResourceType<TChild>();
@@ -34,6 +44,32 @@ public static class ResourceDataClientExtensions
             var displayValue = displayValueFunc(data);
 
             yield return new SparcpointResourceDisplayEntry(item.ResourceId, resourceType, permissions, displayValue);
+        }
+    }
+
+    public static async IAsyncEnumerable<SparcpointResourceDisplayEntry> ListChildrenAsync<TChild>(this IResourceDataClient parent, Func<TChild, string> displayValueFunc, ScopePath childPrefix) where TChild : class, new()
+    {
+        var resourceType = ResourceTypeAttribute.GetResourceType<TChild>();
+        await foreach (var item in parent.GetChildClientsAsync<TChild>(childPrefix))
+        {
+            var data = await item.GetAsync();
+            if (data == null)
+                continue;
+
+            var permissions = await item.GetPermissionsAsync();
+            var displayValue = displayValueFunc(data);
+
+            yield return new SparcpointResourceDisplayEntry(item.ResourceId, resourceType, permissions, displayValue);
+        }
+    }
+
+    public static async IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(this IResourceDataClient parent, ScopePath childPrefix) where TChild : class, new()
+    {
+        var prefix = parent.ResourceId + childPrefix;
+        await foreach(var item in parent.GetChildClientsAsync<TChild>(maxDepth: int.MaxValue))
+        {
+            if (item.ResourceId.StartsWith(prefix))
+                yield return item;
         }
     }
 }

@@ -27,7 +27,15 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
     public async Task<T?> GetAsync()
     {
         var found = await _Store.GetAsync<SparcpointResource<T>>(ResourceId);
-        return found?.Data;
+        if (found == null)
+            return null;
+
+        var data = found.Data;
+
+        ResourceIdAttribute.SetResourceId(data, found.ResourceId);
+        ResourcePermissionsAttribute.SetPermissions(data, found.Permissions);
+
+        return data;
     }
 
     public IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new()
@@ -36,7 +44,7 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
         return _Factory.Create<TChild>(resourceId);
     }
 
-    public async IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = 2) where TChild : class, new()
+    public async IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = int.MaxValue) where TChild : class, new()
     {
         var resourceType = ResourceTypeAttribute.GetResourceType<TChild>();
         var found = _Store.GetChildEntriesAsync(ResourceId, maxDepth, includeTypes: new[] { resourceType });

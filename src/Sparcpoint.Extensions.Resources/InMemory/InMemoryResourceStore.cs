@@ -47,7 +47,7 @@ internal class InMemoryResourceStore : IResourceStore
         return Task.FromResult((T?)null);
     }
 
-    public async IAsyncEnumerable<SparcpointResourceEntry> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = 2, string[]? includeTypes = null)
+    public async IAsyncEnumerable<SparcpointResourceEntry> GetChildEntriesAsync(ScopePath parentResourceId, int maxDepth = int.MaxValue, string[]? includeTypes = null)
     {
         var keys = _Collection.Keys.ToArray();
         var rank = parentResourceId.Rank;

@@ -37,7 +37,7 @@ internal class DefaultOrganizationClient : IOrganizationClient
     public async Task<OrganizationData?> GetAsync()
         => await _Client.GetAsync();
 
-    public IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = 2) where TChild : class, new()
+    public IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = int.MaxValue) where TChild : class, new()
         => _Client.GetChildClientsAsync<TChild>(maxDepth);
 
     public IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new()

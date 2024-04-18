@@ -47,7 +47,7 @@ internal class DefaultSubscriptionClient : ISubscriptionClient
     public async Task SetPermissionsAsync(ResourcePermissions permissions)
         => await _Client.SetPermissionsAsync(permissions);
 
-    public IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = 2) where TChild : class, new()
+    public IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = int.MaxValue) where TChild : class, new()
         => _Client.GetChildClientsAsync<TChild>(maxDepth);
 
     public IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new()

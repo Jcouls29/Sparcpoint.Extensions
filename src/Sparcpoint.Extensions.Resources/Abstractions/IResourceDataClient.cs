@@ -8,7 +8,7 @@ public interface IResourceDataClient
     Task<ResourcePermissions> GetPermissionsAsync();
     Task SetPermissionsAsync(ResourcePermissions permissions);
 
-    IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = 2) where TChild : class, new();
+    IAsyncEnumerable<IResourceDataClient<TChild>> GetChildClientsAsync<TChild>(int maxDepth = int.MaxValue) where TChild : class, new();
     IResourceDataClient<TChild> GetChildClient<TChild>(ScopePath relativePath) where TChild : class, new();
 }
 
