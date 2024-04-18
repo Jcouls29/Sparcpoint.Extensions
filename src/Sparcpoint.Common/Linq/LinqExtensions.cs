@@ -19,6 +19,22 @@ public static class LinqExtensions
         }
     }
 
+    public static async IAsyncEnumerable<TOutput> Select<T, TOutput>(this IAsyncEnumerable<T> values, Func<T, Task<TOutput>> selector)
+    {
+        await foreach(var value in values)
+        {
+            yield return await selector(value);
+        }
+    }
+
+    public static async IAsyncEnumerable<TOutput> Select<T, TOutput>(this IAsyncEnumerable<T> values, Func<T, TOutput> selector)
+    {
+        await foreach (var value in values)
+        {
+            yield return selector(value);
+        }
+    }
+
     public static async IAsyncEnumerable<T> Where<T>(this IAsyncEnumerable<T> values, Func<T, bool> predicate)
     {
         await foreach (var value in values)

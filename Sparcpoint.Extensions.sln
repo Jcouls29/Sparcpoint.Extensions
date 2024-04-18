@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{796CD09E-5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CBDF54E0-9A8C-475A-964C-FDC40B475751}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		CHANGELOG.md = CHANGELOG.md
 		.github\workflows\main.yml = .github\workflows\main.yml
 		README.md = README.md
@@ -26,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Azure
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.IntegrationTests", "test\Sparcpoint.Extensions.IntegrationTests\Sparcpoint.Extensions.IntegrationTests.csproj", "{10F67652-08D2-4AD2-8F80-F7925620040B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Resources", "src\Sparcpoint.Extensions.Resources\Sparcpoint.Extensions.Resources.csproj", "{F3B5E240-6744-47DE-BD2D-EE89C94A930F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Resources", "src\Sparcpoint.Extensions.Resources\Sparcpoint.Extensions.Resources.csproj", "{F3B5E240-6744-47DE-BD2D-EE89C94A930F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

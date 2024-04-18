@@ -24,6 +24,9 @@ public class SparcpointClient : ISparcpointClient
         Ensure.ArgumentNotNull(data);
         Ensure.NotNullOrWhiteSpace(data.DisplayName);
 
+        if (await DoesSubscriptionWithDisplayNameExists(data.DisplayName))
+            throw new InvalidOperationException($"A subscription with display name '{data.DisplayName}' already exists for account '{_AccountId}'.");
+
         var resourceId = SubscriptionData.CreateResourceId(Guid.NewGuid().ToString());
         var resource = new SparcpointResource<SubscriptionData>
         {
@@ -45,6 +48,22 @@ public class SparcpointClient : ISparcpointClient
         {
             yield return new DefaultSubscriptionClient(_Store, _Factory, _Factory.Create<SubscriptionData>(entry.ResourceId), _AccountId);
         }
+    }
+
+    private async Task<bool> DoesSubscriptionWithDisplayNameExists(string displayName)
+    {
+        var indexValues = await _Store.GetAccountIndexByResourceType<SparcpointResource<SubscriptionData>>(_AccountId);
+        foreach(var entry in indexValues)
+        {
+            var sub = await _Store.GetAsync<SparcpointResource<SubscriptionData>>(entry.ResourceId);
+            if (sub == null)
+                continue;
+
+            if (sub.Data.DisplayName.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     public IResourceDataClient<T> GetResourceClient<T>(ScopePath resourceId) where T : class, new()

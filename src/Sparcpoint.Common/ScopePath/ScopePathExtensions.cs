@@ -106,6 +106,15 @@ public static class ScopePathExtensions
         return scope.Reverse().StartsWith(endsWith.Reverse());
     }
 
+    public static ScopePath LastNSegments(this ScopePath scope, int count)
+    {
+        if (count > scope.Rank)
+            throw new ArgumentOutOfRangeException($"Segment count cannot be larger than the scope's rank. [Rank = {scope.Rank}, Count = {count}]");
+
+        var segments = scope.Segments.Reverse().Take(count).Reverse().ToArray();
+        return new ScopePath(segments);
+    }
+
     public static ScopePath Reverse(this ScopePath scope)
     {
         return new ScopePath(scope.Segments.Reverse().ToArray());

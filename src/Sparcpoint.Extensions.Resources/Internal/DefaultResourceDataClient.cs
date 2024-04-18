@@ -8,7 +8,7 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
 
     public DefaultResourceDataClient(IResourceStore store, IResourceDataClientFactory factory, ScopePath resourceId)
     {
-        Ensure.ArgumentNotNull(_Store);
+        Ensure.ArgumentNotNull(store);
         Ensure.ArgumentNotNull(factory);
         Ensure.NotEqual(ScopePath.RootScope, resourceId);
 

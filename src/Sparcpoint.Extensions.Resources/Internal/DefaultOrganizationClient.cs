@@ -4,6 +4,8 @@ namespace Sparcpoint.Extensions.Resources;
 
 internal class DefaultOrganizationClient : IOrganizationClient
 {
+    private static readonly string ResourceType = ResourceTypeAttribute.GetResourceType<OrganizationData>();
+
     private readonly IResourceStore _Store;
     private readonly IResourceDataClientFactory _Factory;
     private readonly IResourceDataClient<OrganizationData> _Client;
@@ -27,7 +29,10 @@ internal class DefaultOrganizationClient : IOrganizationClient
     public ScopePath ResourceId => _Client.ResourceId;
 
     public async Task DeleteAsync()
-        => await _Client.DeleteAsync();
+    {
+        await _Client.DeleteAsync();
+        await _Store.RemoveFromIndexAsync(_AccountId, ResourceType, ResourceId);
+    }
 
     public async Task<OrganizationData?> GetAsync()
         => await _Client.GetAsync();
