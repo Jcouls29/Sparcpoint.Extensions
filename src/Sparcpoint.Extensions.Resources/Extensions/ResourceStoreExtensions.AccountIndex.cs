@@ -13,7 +13,7 @@ public static partial class ResourceStoreExtensions
             found = new AccountIndexResource
             {
                 ResourceId = resourceId,
-                Permissions = ResourcePermissions.With(accountId, b => b.CanReadData().CanWriteData()),
+                Permissions = ResourcePermissions.WithOwnerPermissions(accountId),
             };
             await store.SetAsync(found);
         }

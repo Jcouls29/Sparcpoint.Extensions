@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
 {
@@ -31,6 +32,8 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
         {
             foreach (var rid in resourceIds)
             {
+                Ensure.NotEqual(ScopePath.RootScope, rid);
+
                 var dataPath = GetDataPath(rid);
                 var permissionsPath = GetPermissionsPath(rid);
 
@@ -52,7 +55,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             if (data == null)
                 return null;
 
-            var permissions = await GetPermissions(resourceId);
+            var permissions = await GetPermissionsAsync(resourceId) ?? new();
 
             ResourceIdAttribute.SetResourceId(data, resourceId);
             ResourcePermissionsAttribute.SetPermissions(data, permissions);
@@ -84,7 +87,7 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
                 if (checkTypes && !includeTypes!.Contains(resourceType))
                     continue;
 
-                var permissions = await GetPermissions(resourceId);
+                var permissions = await GetPermissionsAsync(resourceId) ?? new();
                 yield return new SparcpointResourceEntry(resourceId, resourceType, permissions);
             }
         }
@@ -105,9 +108,21 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             var client = _Client.GetBlobClient(dataPath);
             await client.UpdateAsJsonAsync(data, tags: tags);
 
+            if (data.Permissions != null)
+                await SetPermissionsAsync(resourceId, data.Permissions);
+        }
+
+        public async Task SetPermissionsAsync(ScopePath resourceId, ResourcePermissions permissions)
+        {
+            Ensure.NotEqual(ScopePath.RootScope, resourceId);
+            Ensure.NotNull(permissions);
+
+            if (!await ExistsAsync(resourceId))
+                throw new InvalidOperationException($"Resource '{resourceId}' does not exist.");
+
             var permissionsPath = GetPermissionsPath(resourceId);
-            client = _Client.GetBlobClient(permissionsPath);
-            await client.UpdateAsJsonAsync(data.Permissions ?? new());
+            var client = _Client.GetBlobClient(permissionsPath);
+            await client.UpdateAsJsonAsync(permissions ?? new());
         }
 
         private ScopePath GetDataPath(ScopePath resourceId)
@@ -116,8 +131,8 @@ namespace Sparcpoint.Extensions.Azure.Resources.BlobStorage
             => await _Client.GetBlobClient(GetDataPath(resourceId)).GetAsJsonAsync<T>();
         private ScopePath GetPermissionsPath(ScopePath resourceId)
             => resourceId + PERMISSIONS_FILENAME;
-        private async Task<ResourcePermissions> GetPermissions(ScopePath resourceId)
-            => (await _Client.GetBlobClient(GetPermissionsPath(resourceId)).GetAsJsonAsync<ResourcePermissions>()) ?? new();
+        public async Task<ResourcePermissions?> GetPermissionsAsync(ScopePath resourceId)
+            => (await _Client.GetBlobClient(GetPermissionsPath(resourceId)).GetAsJsonAsync<ResourcePermissions>());
 
         public async Task<bool> ExistsAsync(ScopePath resourceId, string? resourceType = null)
         {

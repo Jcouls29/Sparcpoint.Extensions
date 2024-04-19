@@ -42,15 +42,13 @@ namespace Sparcpoint.Extensions.Tests.Resources
         [Fact]
         public async Task Can_set_permissions()
         {
-            var permissions = new ResourcePermissions
-            {
-                new ResourcePermissionEntry { AccountId = "ACCOUNT_02", Permission = new PermissionEntry("ToLive", PermissionValue.Allow) }
-            };
+            var permissions = await Subscription.GetPermissionsAsync();
+            permissions.Add(new ResourcePermissionEntry { AccountId = "ACCOUNT_02", Permission = new PermissionEntry("ToLive", PermissionValue.Allow) });
             await Subscription.SetPermissionsAsync(permissions);
 
             var actualPermissions = await Subscription.GetPermissionsAsync();
             Assert.NotNull(actualPermissions);
-            Assert.Single(actualPermissions);
+            Assert.Equal(5, actualPermissions.Count);
             AssertIsAllowed(actualPermissions, "ACCOUNT_02", "ToLive");
         }
 
@@ -130,6 +128,18 @@ namespace Sparcpoint.Extensions.Tests.Resources
             Assert.Contains(orgs, o => o!.DisplayName == "ORG 1");
             Assert.Contains(orgs, o => o!.DisplayName == "ORG 2");
             Assert.Contains(orgs, o => o!.DisplayName == "ORG 3");
+        }
+
+        [Fact]
+        public async Task Account_without_access_throws_error()
+        {
+            var org = await CreateOrganization("ORG 1");
+
+            var client2 = Factory.Create("ACCOUNT_02");
+            var resource = client2.GetResourceClient<OrganizationData>(org.ResourceId);
+
+            Assert.NotNull(resource);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => resource.GetAsync());
         }
 
         private async Task<IOrganizationClient> CreateOrganization(string displayName, ISubscriptionClient? sub = null)

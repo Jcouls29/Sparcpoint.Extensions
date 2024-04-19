@@ -63,4 +63,16 @@ public static class Ensure
                 throw new InvalidOperationException($"{parameterName} has an invalid value: {value}.");
         }
     }
+
+    public static void ConditionMet(bool result, [CallerArgumentExpression(nameof(result))] string? condition = null)
+    {
+        if (!result)
+            throw new InvalidOperationException($"Condition '{condition}' was not met.");
+    }
+
+    public static void ConditionNotMet(bool result, [CallerArgumentExpression(nameof(result))] string? condition = null)
+    {
+        if (result)
+            throw new InvalidOperationException($"Condition '{condition}' was met and should not have been.");
+    }
 }

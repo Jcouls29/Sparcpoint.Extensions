@@ -1,25 +1,27 @@
-﻿namespace Sparcpoint.Extensions.Resources;
+﻿using LazyCache;
+
+namespace Sparcpoint.Extensions.Resources;
 
 public class SparcpointClientFactory : ISparcpointClientFactory
 {
     private readonly IResourceStore _Store;
-    private readonly IResourceDataClientFactory _ClientFactory;
+    private readonly IPermissionCache _PermissionCache;
 
-    public SparcpointClientFactory(IResourceStore store, IResourceDataClientFactory clientFactory)
+    public SparcpointClientFactory(IResourceStore store)
     {
         Ensure.ArgumentNotNull(store);
-        Ensure.ArgumentNotNull(clientFactory);
-
+        
+        _PermissionCache = new DefaultPermissionsCache(store, new CachingService());
         _Store = store;
-        _ClientFactory = clientFactory;
     }
-
-    public SparcpointClientFactory(IResourceStore store) : this(store, new DefaultResourceDataClientFactory(store)) { }
 
     public ISparcpointClient Create(string accountId)
     {
         Ensure.ArgumentNotNullOrWhiteSpace(accountId);
 
-        return new SparcpointClient(_Store, _ClientFactory, accountId);
+        var protectedStore = new ProtectedResourceStore(_Store, _PermissionCache, accountId);
+        var clientFactory = new DefaultResourceDataClientFactory(protectedStore);
+
+        return new SparcpointClient(protectedStore, clientFactory, accountId);
     }
 }

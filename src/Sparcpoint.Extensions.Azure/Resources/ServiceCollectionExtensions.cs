@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using Sparcpoint.Extensions.Azure.Resources.BlobStorage;
 using Sparcpoint.Extensions.Resources;
@@ -19,6 +20,7 @@ public static class ServiceCollectionExtensions
         Ensure.NotNullOrWhiteSpace(options.ConnectionString);
         Ensure.NotNullOrWhiteSpace(options.ContainerName);
 
-        return services.AddSingleton<IResourceStore>(new BlobStorageResourceStore(new BlobContainerClient(options.ConnectionString, options.ContainerName)));
+        var store = new BlobStorageResourceStore(new BlobContainerClient(options.ConnectionString, options.ContainerName));
+        return services.AddSingleton<IResourceStore>(store);
     }
 }

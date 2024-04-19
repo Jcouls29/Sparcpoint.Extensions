@@ -7,7 +7,7 @@ public abstract class SparcpointResource
     [ResourceId, JsonIgnore]
     public ScopePath ResourceId { get; set; }
     [ResourcePermissions, JsonIgnore]
-    public ResourcePermissions Permissions { get; set; } = new();
+    public ResourcePermissions? Permissions { get; set; }
 
     public string ResourceType => ResourceTypeAttribute.GetResourceType(this.GetType());
     public string Name => ResourceId.Segments.Last();

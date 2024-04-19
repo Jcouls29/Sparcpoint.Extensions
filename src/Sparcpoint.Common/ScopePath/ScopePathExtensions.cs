@@ -82,6 +82,11 @@ public static class ScopePathExtensions
         return hierarchy.ToArray();
     }
 
+    public static ScopePath[] GetHierarchyAscending(this ScopePath scope, bool includeRootScope = false)
+    {
+        return GetHierarchy(scope, includeRootScope).Reverse().ToArray();
+    }
+
     public static bool StartsWith(this ScopePath scope, ScopePath startsWith)
     {
         var itSequence = scope.Segments.GetEnumerator();

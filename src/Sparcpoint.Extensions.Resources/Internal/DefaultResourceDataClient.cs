@@ -33,7 +33,9 @@ internal class DefaultResourceDataClient<T> : IResourceDataClient<T> where T : c
         var data = found.Data;
 
         ResourceIdAttribute.SetResourceId(data, found.ResourceId);
-        ResourcePermissionsAttribute.SetPermissions(data, found.Permissions);
+
+        if (found.Permissions != null)
+            ResourcePermissionsAttribute.SetPermissions(data, found.Permissions);
 
         return data;
     }

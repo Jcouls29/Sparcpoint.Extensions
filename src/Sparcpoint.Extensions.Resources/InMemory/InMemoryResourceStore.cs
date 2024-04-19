@@ -66,6 +66,15 @@ internal class InMemoryResourceStore : IResourceStore
         }
     }
 
+    public async Task<ResourcePermissions?> GetPermissionsAsync(ScopePath resourceId)
+    {
+        var o = await GetAsync<SparcpointResource>(resourceId);
+        if (o == null)
+            return null;
+
+        return o.Permissions;
+    }
+
     public Task SetAsync<T>(T data) where T : SparcpointResource
     {
         var resourceId = data.ResourceId;
@@ -75,16 +84,28 @@ internal class InMemoryResourceStore : IResourceStore
         _Collection.AddOrUpdate(resourceId, new InMemoryResource
         {
             ResourceId = resourceId,
-            Permissions = permissions,
+            Permissions = permissions ?? new(),
             ResourceType = resourceType,
             Resource = data
         }, (id, r) =>
         {
-            r.Permissions = permissions;
+            if (permissions != null)
+                r.Permissions = permissions;
+
             r.Resource = data;
 
             return r;
         });
+
+        return Task.CompletedTask;
+    }
+
+    public Task SetPermissionsAsync(ScopePath resourceId, ResourcePermissions permissions)
+    {
+        if (!_Collection.TryGetValue(resourceId, out var result))
+            throw new InvalidOperationException($"Resource not found. [Resource Id = {resourceId}]");
+
+        result.Permissions = permissions;
 
         return Task.CompletedTask;
     }
