@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Integ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparcpoint.Extensions.Resources", "src\Sparcpoint.Extensions.Resources\Sparcpoint.Extensions.Resources.csproj", "{F3B5E240-6744-47DE-BD2D-EE89C94A930F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparcpoint.Extensions.Multitenancy", "src\Sparcpoint.Extensions.Multitenancy\Sparcpoint.Extensions.Multitenancy.csproj", "{2325F860-39B5-408E-990E-F77090ACC501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{F3B5E240-6744-47DE-BD2D-EE89C94A930F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3B5E240-6744-47DE-BD2D-EE89C94A930F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3B5E240-6744-47DE-BD2D-EE89C94A930F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2325F860-39B5-408E-990E-F77090ACC501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2325F860-39B5-408E-990E-F77090ACC501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2325F860-39B5-408E-990E-F77090ACC501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2325F860-39B5-408E-990E-F77090ACC501}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
