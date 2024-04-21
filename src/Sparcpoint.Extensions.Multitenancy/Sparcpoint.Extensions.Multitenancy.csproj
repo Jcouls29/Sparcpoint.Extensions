@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,14 +9,14 @@
     <Authors>Justin Coulston</Authors>
     <Company>Sparcpoint, LLC</Company>
     <Product>Sparcpoint Extensions</Product>
-    <Description>Modules used to manage objects, their hierarchy and storage</Description>
+    <Description>Library to support multitenancy</Description>
     <Copyright>(c) 2024 Sparcpoint, LLC</Copyright>
     <PackageProjectUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Jcouls29/Sparcpoint.Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.Objects</PackageTags>
-    <PackageReleaseNotes>Objects</PackageReleaseNotes>
+    <PackageTags>csharp;extensions;sparcpoint;Microsoft.Extensions.Multitenancy</PackageTags>
+    <PackageReleaseNotes>Initial Offering</PackageReleaseNotes>
     <EnablePackageValidation>true</EnablePackageValidation>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -35,7 +35,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,7 +53,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sparcpoint.Common\Sparcpoint.Common.csproj" />
-    <ProjectReference Include="..\Sparcpoint.Extensions.DependencyInjection\Sparcpoint.Extensions.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>
