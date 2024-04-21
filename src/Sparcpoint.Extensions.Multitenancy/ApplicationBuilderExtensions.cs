@@ -7,6 +7,7 @@ namespace Sparcpoint.Extensions.Multitenancy;
 public static class ApplicationBuilderExtensions
 {
     public static IApplicationBuilder UseMultitenancy<TTenant>(this IApplicationBuilder app)
+        where TTenant : class
     {
         Ensure.ArgumentNotNull(app);
         return app.UseMiddleware<TenantResolutionMiddleware<TTenant>>();

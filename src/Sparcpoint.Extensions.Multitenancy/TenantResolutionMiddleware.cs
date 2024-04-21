@@ -3,6 +3,7 @@
 namespace Sparcpoint.Extensions.Multitenancy;
 
 internal sealed class TenantResolutionMiddleware<TTenant>
+    where TTenant : class
 {
     private readonly RequestDelegate _Next;
 

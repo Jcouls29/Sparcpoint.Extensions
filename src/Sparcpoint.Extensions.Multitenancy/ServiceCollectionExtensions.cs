@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sparcpoint.Extensions.Multitenancy;
 
@@ -12,6 +13,8 @@ public static class ServiceCollectionExtensions
         Ensure.ArgumentNotNull(services);
         Ensure.ArgumentNotNull(configure);
 
+        services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
         services.AddScoped<ITenantResolver<TTenant>, TResolver>();
         services.AddScoped<TenantContext<TTenant>>(provider =>
         {
@@ -19,9 +22,8 @@ public static class ServiceCollectionExtensions
             var accessor = provider.GetRequiredService<IHttpContextAccessor>();
             Ensure.NotNull(accessor.HttpContext);
 
-            return resolver.Resolve(accessor.HttpContext);
+            return resolver.Resolve(accessor.HttpContext) ?? TenantContext<TTenant>.Empty;
         });
-        services.AddScoped<TTenant>(provider => provider.GetRequiredService<TenantContext<TTenant>>().Tenant);
 
         var builder = new TenantServiceBuilder<TTenant>(services);
         configure(builder);

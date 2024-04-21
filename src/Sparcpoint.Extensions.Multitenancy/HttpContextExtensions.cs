@@ -7,6 +7,7 @@ public static class HttpContextExtensions
     private const string TENANT_CONTEXT_KEY = "sparcpoint:tenant-context";
 
     public static void SetTenantContext<TTenant>(this HttpContext context, TenantContext<TTenant> tenantContext)
+        where TTenant : class
     {
         Ensure.ArgumentNotNull(context);
         Ensure.ArgumentNotNull(tenantContext);
@@ -15,6 +16,7 @@ public static class HttpContextExtensions
     }
 
     public static TenantContext<TTenant>? GetTenantContext<TTenant>(this HttpContext context)
+        where TTenant : class
     {
         Ensure.ArgumentNotNull(context);
 
@@ -29,6 +31,7 @@ public static class HttpContextExtensions
     }
 
     public static TTenant? GetTenant<TTenant>(this HttpContext context)
+        where TTenant : class
     {
         var tenantContext = GetTenantContext<TTenant>(context);
         if (tenantContext == null)

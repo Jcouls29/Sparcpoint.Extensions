@@ -1,19 +1,19 @@
 ﻿namespace Sparcpoint.Extensions.Multitenancy;
 
-public sealed class TenantContext<TTenant> : IDisposable
+public sealed record TenantContext<TTenant> : IDisposable 
+    where TTenant : class
 {
-    public TenantContext(TTenant tenant)
+    private TenantContext(TTenant? tenant)
     {
-        Ensure.ArgumentNotNull(tenant);
-
         Tenant = tenant;
         Properties = new Dictionary<string, object>();
         Id = Guid.NewGuid().ToString();
     }
 
     public string Id { get; }
-    public TTenant Tenant { get; }
+    public TTenant? Tenant { get; }
     public IDictionary<string, object> Properties { get; }
+    public bool HasTenant => (Tenant != null);
 
     public void Dispose()
     {
@@ -53,4 +53,9 @@ public sealed class TenantContext<TTenant> : IDisposable
             // Do Nothing
         }
     }
+
+    public static TenantContext<TTenant> TenantFound(TTenant tenant)
+        => new TenantContext<TTenant>(tenant);
+
+    public static TenantContext<TTenant> Empty { get; } = new TenantContext<TTenant>((TTenant?)null);
 }

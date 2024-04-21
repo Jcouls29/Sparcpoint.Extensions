@@ -5,6 +5,7 @@ internal static class TenantContextExtensions
     private const string TENANT_PROVIDER_KEY = "sparcpoint:tenant-container";
 
     public static IServiceProvider? GetTenantProvider<TTenant>(this TenantContext<TTenant> tenantContext)
+        where TTenant : class
     {
         Ensure.ArgumentNotNull(tenantContext);
 
@@ -15,6 +16,7 @@ internal static class TenantContextExtensions
     }
 
     public static void SetTenantProvider<TTenant>(this TenantContext<TTenant> tenantContext, IServiceProvider tenantProvider)
+        where TTenant : class
     {
         Ensure.ArgumentNotNull(tenantContext);
         Ensure.ArgumentNotNull(tenantProvider);
