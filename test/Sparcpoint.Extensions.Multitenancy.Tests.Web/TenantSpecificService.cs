@@ -2,9 +2,9 @@
 
 public class TenantSpecificService
 {
-    public TenantSpecificService(TenantContext<AccountTenant> tenant)
+    public TenantSpecificService(AccountTenant tenant)
     {
-        Tenant = tenant.Tenant;
+        Tenant = tenant;
     }
 
     public AccountTenant? Tenant { get; }

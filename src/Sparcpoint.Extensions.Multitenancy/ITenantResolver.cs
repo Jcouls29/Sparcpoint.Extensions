@@ -5,5 +5,5 @@ namespace Sparcpoint.Extensions.Multitenancy;
 public interface ITenantResolver<TTenant>
     where TTenant : class
 {
-    TenantContext<TTenant> Resolve(HttpContext context);
+    Task<TenantContext<TTenant>?> ResolveAsync(HttpContext context);
 }
