@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sparcpoint.Extensions.Multitenancy;
+#pragma warning disable CS8603 // Possible null reference return.
 
 public static class ServiceCollectionExtensions
 {
@@ -14,15 +15,18 @@ public static class ServiceCollectionExtensions
         Ensure.ArgumentNotNull(configure);
 
         services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
+        services.TryAddSingleton(typeof(ITenantAccessor<>), typeof(DefaultTenantAccessor<>));
+        
         services.AddScoped<ITenantResolver<TTenant>, TResolver>();
-        services.AddScoped<TenantContext<TTenant>>(provider =>
+        services.AddScoped<TenantContext<TTenant>>((p) =>
         {
-            var resolver = provider.GetRequiredService<ITenantResolver<TTenant>>();
-            var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-            Ensure.NotNull(accessor.HttpContext);
-
-            return resolver.Resolve(accessor.HttpContext) ?? TenantContext<TTenant>.Empty;
+            var accessor = p.GetService<ITenantAccessor<TTenant>>();
+            return accessor?.Context;
+        });
+        services.AddScoped<TTenant>((p) =>
+        {
+            var accessor = p.GetService<ITenantAccessor<TTenant>>();
+            return accessor?.Context?.Tenant;
         });
 
         var builder = new TenantServiceBuilder<TTenant>(services);

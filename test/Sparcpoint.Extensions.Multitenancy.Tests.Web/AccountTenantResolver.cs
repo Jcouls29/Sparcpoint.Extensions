@@ -1,8 +1,10 @@
 ﻿namespace Sparcpoint.Extensions.Multitenancy;
 
+#pragma warning disable CS8613 // Nullability of reference types in return type doesn't match implicitly implemented member.
 public class AccountTenantResolver : ITenantResolver<AccountTenant>
 {
-    public TenantContext<AccountTenant> Resolve(HttpContext context)
+
+    public async Task<TenantContext<AccountTenant>> ResolveAsync(HttpContext context)
     {
         Ensure.NotNull(context);
 

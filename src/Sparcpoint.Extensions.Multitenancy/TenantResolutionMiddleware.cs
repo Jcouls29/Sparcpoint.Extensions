@@ -19,7 +19,7 @@ internal sealed class TenantResolutionMiddleware<TTenant>
         Ensure.ArgumentNotNull(context);
         Ensure.ArgumentNotNull(tenantResolver);
 
-        var tenantContext = tenantResolver.Resolve(context);
+        var tenantContext = await tenantResolver.ResolveAsync(context);
 
         if (tenantContext != null)
         {
