@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Sparcpoint;
 
+[JsonConverter(typeof(ScopePathJsonConverter))]
 public readonly struct ScopePath : IEquatable<ScopePath>, IComparable<ScopePath>
 {
     private readonly string[] _Segments = Array.Empty<string>();
