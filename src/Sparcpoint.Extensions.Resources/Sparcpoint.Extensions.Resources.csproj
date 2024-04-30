@@ -27,7 +27,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
 
-    <VersionPrefix>1.6.3</VersionPrefix>
+    <VersionPrefix>1.6.4</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -49,6 +49,7 @@
     <PackageReference Include="LazyCache" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageReference Include="Slugify.Core" Version="4.0.1" />
+    <PackageReference Include="SmartFormat" Version="3.3.2" />
   </ItemGroup>
 
   <ItemGroup>

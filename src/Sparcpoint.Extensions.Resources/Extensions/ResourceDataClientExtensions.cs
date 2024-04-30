@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartFormat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,28 @@ public static class ResourceDataClientExtensions
     public static async Task<IResourceDataClient<TChild>> SaveAsync<TChild>(this IResourceDataClient parent, ScopePath childRelativePath, TChild childData, ResourcePermissions? permissions = null)
         where TChild : class, new()
     {
+        var client = parent.GetChildClient<TChild>(childRelativePath);
+        await client.SaveAsync(childData);
+
+        if (permissions != null)
+            await client.SetPermissionsAsync(permissions);
+
+        return client;
+    }
+
+    public static async Task<IResourceDataClient<TChild>> SaveAsync<TChild>(this IResourceDataClient parent, TChild childData, ResourcePermissions? permissions = null)
+        where TChild : class, new()
+    {
+        var format = ResourceIdAttribute.GetFormat(typeof(TChild));
+        if (format == null)
+            throw new InvalidOperationException($"A `ResourceIdAttribute` with `Format` specified is required to utilize this save method. [Type = {typeof(TChild).Name}]");
+
+        var childRelativePath = Smart.Format(format, childData);
+        if (childRelativePath == null)
+            throw new InvalidOperationException($"Could not properly format the child's resource path. [Format = {format}, Type = {typeof(TChild).Name}]");
+        if (childRelativePath.Contains("{") || childRelativePath.Contains("}"))
+            throw new InvalidOperationException($"Brackets cannot be leftover after formatting of the resource id. Please check that all properties exist on the object. [Format = {format}, Type = {typeof(TChild).Name}]");
+
         var client = parent.GetChildClient<TChild>(childRelativePath);
         await client.SaveAsync(childData);
 
