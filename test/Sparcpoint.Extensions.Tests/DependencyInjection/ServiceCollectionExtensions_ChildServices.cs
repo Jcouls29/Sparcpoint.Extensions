@@ -208,6 +208,30 @@ public class ServiceCollectionExtensions_ChildServices
         Assert.IsType<ChildService>(inner.Child);
     }
 
+    [Fact]
+    public void Concrete_service_can_be_injected_into_concrete_service()
+    {
+        var provider = Build(s =>
+        {
+            s.WithChildServices<NoInterfaceClass>(child => child.AddSingleton<DtoClass>());
+        });
+
+        var service = provider.GetService<NoInterfaceClass>();
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    public void Instance_child_service_provides()
+    {
+        var provider = Build(s =>
+        {
+            s.WithChildServices<NoInterfaceClass>(child => child.AddSingleton(new DtoClass { }));
+        });
+
+        var service = provider.GetService<NoInterfaceClass>();
+        Assert.NotNull(service);
+    }
+
     private ServiceProvider Build(Action<IServiceCollection> configure)
     {
         var services = new ServiceCollection();
@@ -280,6 +304,21 @@ public class ServiceCollectionExtensions_ChildServices
 
     public interface IChild<T> { }
     public class OpenChild<T> : IChild<T> { }
+
+    public class NoInterfaceClass
+    {
+        private readonly DtoClass _Dto;
+
+        public NoInterfaceClass(DtoClass dto)
+        {
+            _Dto = dto ?? throw new Exception();
+        }
+    }
+
+    public class DtoClass
+    {
+        
+    }
 }
 
 
