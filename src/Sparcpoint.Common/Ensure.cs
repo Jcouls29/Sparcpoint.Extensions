@@ -10,22 +10,28 @@ namespace Sparcpoint;
 
 public static class Ensure
 {
-    public static void ArgumentNotNull([NotNull] object? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    public static T ArgumentNotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
     {
         if (value == null)
             throw new ArgumentNullException(parameterName);
+
+        return value;
     }
 
-    public static void ArgumentNotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    public static string ArgumentNotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException($"{parameterName} is null or contains only whitespace.", parameterName);
+
+        return value;
     }
 
-    public static void NotNull([NotNull] object? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
     {
         if (value == null)
             throw new InvalidOperationException($"{parameterName} is null.");
+
+        return value;
     }
 
     public static void Null([MaybeNull] object? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
@@ -34,10 +40,12 @@ public static class Ensure
             throw new InvalidOperationException($"{parameterName} is not null.");
     }
 
-    public static void NotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    public static string NotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new InvalidOperationException($"{parameterName} is null or contains only whitespace.");
+
+        return value;
     }
 
     public static void NotEqual(string expected, string actual, [CallerArgumentExpression(nameof(actual))] string? parameterName = null)
