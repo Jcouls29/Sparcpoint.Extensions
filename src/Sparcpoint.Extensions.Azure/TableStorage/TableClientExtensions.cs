@@ -8,19 +8,48 @@ namespace Azure.Data.Tables;
 
 public static class TableClientExtensions
 {
-    public static async Task<Azure.Response> UpsertEntityAsync<T>(this TableClient client, T entity, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task<Azure.Response> UpsertEntityAsync<T>(this TableClient client, T entity, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
+        where T : JsonTableEntity
     {
         return await client.UpsertEntityAsync(entity.GetValue(), updateMode, cancelToken);
     }
 
-    public static async Task<Azure.Response> UpdateEntityAsync<T>(this TableClient client, T entity, ETag etag, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task<Azure.Response> UpdateEntityAsync<T>(this TableClient client, T entity, ETag etag, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
+        where T : JsonTableEntity
     {
         return await client.UpdateEntityAsync(entity.GetValue(), etag, updateMode, cancelToken);
     }
 
-    public static async Task<Azure.Response> AddEntityAsync<T>(this TableClient client, T entity, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task<Azure.Response> AddEntityAsync<T>(this TableClient client, T entity, CancellationToken cancelToken = default) 
+        where T : JsonTableEntity
     {
         return await client.AddEntityAsync(entity.GetValue(), cancelToken);
+    }
+
+    public static async Task<Azure.Response> DeleteEntityAsync<T>(this TableClient client, object parameters, ETag etag = default, CancellationToken cancelToken = default)
+        where T : JsonTableEntity
+    {
+        var results = await DeleteEntitiesAsync<T>(client, [parameters], etag, cancelToken).ToArrayAsync();
+        return results[0];
+    }
+
+    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object> values, ETag etag = default, [EnumeratorCancellation] CancellationToken cancelToken = default) 
+        where T : JsonTableEntity
+    {
+        var attr = TableKeyAttribute.Get<T>();
+        if (attr == null)
+            throw new InvalidOperationException("This operation requires the entity to be decorated with a TableKeyAttribute.");
+
+        var pkf = attr.PartitionKeyFormat;
+        var rkf = attr.RowKeyFormat;
+
+        foreach (var value in values)
+        {
+            var pk = Smart.Format(pkf, value);
+            var rk = Smart.Format(rkf, value);
+
+            yield return await client.DeleteEntityAsync(pk, rk, etag, cancelToken);
+        }
     }
 
     public static async IAsyncEnumerable<T> QueryAsync<T>(
