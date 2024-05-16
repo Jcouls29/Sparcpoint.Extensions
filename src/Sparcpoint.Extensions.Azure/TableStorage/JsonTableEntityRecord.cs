@@ -1,10 +1,9 @@
-﻿using System.Reflection;
-using Azure;
+﻿using Azure;
 using Azure.Data.Tables;
 
 namespace Sparcpoint.Extensions.Azure;
 
-public abstract class JsonTableEntity
+public abstract record JsonTableEntityRecord
 {
     public string? PartitionKey { get; set; }
     public string? RowKey { get; set; }
