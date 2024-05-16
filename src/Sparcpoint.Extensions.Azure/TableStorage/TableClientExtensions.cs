@@ -22,7 +22,7 @@ public static partial class TableClientExtensions
         where T : IJsonTableEntity
         => await client.AddEntityAsync(entity.GetValue(), cancelToken);
 
-    public static async Task<Azure.Response?> DeleteEntityAsync<T>(this TableClient client, object parameters, ETag etag = default, CancellationToken cancelToken = default)
+    public static async Task<Azure.Response?> DeleteEntityAsync<T>(this TableClient client, object? parameters = null, ETag etag = default, CancellationToken cancelToken = default)
         where T : IJsonTableEntity
         => await DeleteEntitiesAsync<T>(client, [parameters], cancelToken).FirstOrDefaultAsync();
 
@@ -32,7 +32,7 @@ public static partial class TableClientExtensions
             yield return await client.DeleteEntityAsync(partitionKey, row, cancellationToken: cancelToken).ConfigureAwait(false);
     }
 
-    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object> values, [EnumeratorCancellation] CancellationToken cancelToken = default) 
+    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object?> values, [EnumeratorCancellation] CancellationToken cancelToken = default) 
         where T : IJsonTableEntity
     {
         var attr = TableKeyAttribute.Get<T>();
@@ -44,11 +44,30 @@ public static partial class TableClientExtensions
 
         foreach (var value in values)
         {
-            var pk = Smart.Format(pkf, value);
-            var rk = Smart.Format(rkf, value);
+            var pk = pkf;
+            var rk = rkf;
+
+            if (value != null)
+            {
+                pk = Smart.Format(pkf, value);
+                rk = Smart.Format(rkf, value);
+            }
 
             yield return await client.DeleteEntityAsync(pk, rk, cancellationToken: cancelToken).ConfigureAwait(false);
         }
+    }
+
+    public static async Task<bool> ExistsAsync<T>(this TableClient client, object? parameters = null, CancellationToken cancelToken = default)
+        where T : IJsonTableEntity, new()
+    {
+        var found = await client.GetEntityIfExistsAsync<T>(parameters, cancelToken: cancelToken);
+        return (found != null);
+    }
+
+    public static async Task<bool> ExistsAsync(this TableClient client, string partitionKey, string rowKey, CancellationToken cancelToken = default)
+    {
+        var found = await client.GetEntityIfExistsAsync<TableEntity>(partitionKey, rowKey, cancellationToken: cancelToken);
+        return found.HasValue;
     }
 
     public static async IAsyncEnumerable<T> QueryAsync<T>(
