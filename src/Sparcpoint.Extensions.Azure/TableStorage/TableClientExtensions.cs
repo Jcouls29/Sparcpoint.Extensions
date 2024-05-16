@@ -12,30 +12,27 @@ public static partial class TableClientExtensions
 {
     public static async Task<Azure.Response> UpsertEntityAsync<T>(this TableClient client, T entity, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
         where T : IJsonTableEntity
-    {
-        return await client.UpsertEntityAsync(entity.GetValue(), updateMode, cancelToken);
-    }
+        => await client.UpsertEntityAsync(entity.GetValue(), updateMode, cancelToken);
 
     public static async Task<Azure.Response> UpdateEntityAsync<T>(this TableClient client, T entity, ETag etag, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
         where T : IJsonTableEntity
-    {
-        return await client.UpdateEntityAsync(entity.GetValue(), etag, updateMode, cancelToken);
-    }
+        => await client.UpdateEntityAsync(entity.GetValue(), etag, updateMode, cancelToken);
 
     public static async Task<Azure.Response> AddEntityAsync<T>(this TableClient client, T entity, CancellationToken cancelToken = default) 
         where T : IJsonTableEntity
-    {
-        return await client.AddEntityAsync(entity.GetValue(), cancelToken);
-    }
+        => await client.AddEntityAsync(entity.GetValue(), cancelToken);
 
-    public static async Task<Azure.Response> DeleteEntityAsync<T>(this TableClient client, object parameters, ETag etag = default, CancellationToken cancelToken = default)
+    public static async Task<Azure.Response?> DeleteEntityAsync<T>(this TableClient client, object parameters, ETag etag = default, CancellationToken cancelToken = default)
         where T : IJsonTableEntity
+        => await DeleteEntitiesAsync<T>(client, [parameters], cancelToken).FirstOrDefaultAsync();
+
+    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync(this TableClient client, string partitionKey, string[] rowKeys, [EnumeratorCancellation] CancellationToken cancelToken = default)
     {
-        var results = await DeleteEntitiesAsync<T>(client, [parameters], etag, cancelToken).ToArrayAsync();
-        return results[0];
+        foreach(var row in rowKeys)
+            yield return await client.DeleteEntityAsync(partitionKey, row, cancellationToken: cancelToken).ConfigureAwait(false);
     }
 
-    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object> values, ETag etag = default, [EnumeratorCancellation] CancellationToken cancelToken = default) 
+    public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object> values, [EnumeratorCancellation] CancellationToken cancelToken = default) 
         where T : IJsonTableEntity
     {
         var attr = TableKeyAttribute.Get<T>();
@@ -50,7 +47,7 @@ public static partial class TableClientExtensions
             var pk = Smart.Format(pkf, value);
             var rk = Smart.Format(rkf, value);
 
-            yield return await client.DeleteEntityAsync(pk, rk, etag, cancelToken);
+            yield return await client.DeleteEntityAsync(pk, rk, cancellationToken: cancelToken).ConfigureAwait(false);
         }
     }
 
@@ -245,6 +242,13 @@ public static partial class TableClientExtensions
         where T : IJsonTableEntity
         => await BulkTransactionAsync(client, TableTransactionActionType.UpsertMerge, items, chunkSize, cancelToken);
 
+    public static async Task BulkDeleteAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default)
+        where T : IJsonTableEntity
+        => await BulkTransactionAsync(client, TableTransactionActionType.Delete, items, chunkSize, cancelToken);
+
+    public static async Task BulkDeleteAsync(this TableClient client, string partitionKey, string[] rowKeys, int chunkSize = 25, CancellationToken cancelToken = default)
+        => await BulkTransactionAsync(client, TableTransactionActionType.Delete, rowKeys.Select(rk => new BulkEntity { PartitionKey = partitionKey, RowKey = rk }), chunkSize, cancelToken);
+
     private static async Task BulkTransactionAsync<T>(this TableClient client, TableTransactionActionType actionType, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default)
         where T : IJsonTableEntity
     {
@@ -266,6 +270,30 @@ public static partial class TableClientExtensions
                 if (cancelToken.IsCancellationRequested)
                     return;
             }
+        }
+    }
+
+    private class BulkEntity : IJsonTableEntity
+    {
+        public string? PartitionKey { get; set; }
+        public string? RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; } = ETag.All;
+
+        public ITableEntity GetValue()
+        {
+            return new TableEntity
+            {
+                PartitionKey = PartitionKey,
+                RowKey = RowKey,
+                ETag = ETag,
+                Timestamp = Timestamp
+            };
+        }
+
+        public void SetValue(TableEntity entity)
+        {
+            throw new NotImplementedException();
         }
     }
 }
