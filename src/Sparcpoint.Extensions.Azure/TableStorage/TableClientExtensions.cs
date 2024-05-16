@@ -6,35 +6,35 @@ using System.Runtime.CompilerServices;
 
 namespace Azure.Data.Tables;
 
-public static class TableClientExtensions
+public static partial class TableClientExtensions
 {
     public static async Task<Azure.Response> UpsertEntityAsync<T>(this TableClient client, T entity, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         return await client.UpsertEntityAsync(entity.GetValue(), updateMode, cancelToken);
     }
 
     public static async Task<Azure.Response> UpdateEntityAsync<T>(this TableClient client, T entity, ETag etag, TableUpdateMode updateMode = TableUpdateMode.Merge, CancellationToken cancelToken = default) 
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         return await client.UpdateEntityAsync(entity.GetValue(), etag, updateMode, cancelToken);
     }
 
     public static async Task<Azure.Response> AddEntityAsync<T>(this TableClient client, T entity, CancellationToken cancelToken = default) 
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         return await client.AddEntityAsync(entity.GetValue(), cancelToken);
     }
 
     public static async Task<Azure.Response> DeleteEntityAsync<T>(this TableClient client, object parameters, ETag etag = default, CancellationToken cancelToken = default)
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         var results = await DeleteEntitiesAsync<T>(client, [parameters], etag, cancelToken).ToArrayAsync();
         return results[0];
     }
 
     public static async IAsyncEnumerable<Azure.Response> DeleteEntitiesAsync<T>(this TableClient client, IEnumerable<object> values, ETag etag = default, [EnumeratorCancellation] CancellationToken cancelToken = default) 
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         var attr = TableKeyAttribute.Get<T>();
         if (attr == null)
@@ -58,7 +58,7 @@ public static class TableClientExtensions
         int? maxPerPage = null,
         IEnumerable<string>? select = null,
         [EnumeratorCancellation]
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         await foreach (var entity in client.QueryAsync<TableEntity>(filter, maxPerPage, select, cancelToken))
         {
@@ -74,7 +74,7 @@ public static class TableClientExtensions
         object? parameters = null,
         int? maxPerPage = null,
         IEnumerable<string>? select = null,
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var attr = typeof(T).GetCustomAttribute<TableKeyAttribute>();
         if (attr == null)
@@ -93,7 +93,7 @@ public static class TableClientExtensions
         int? maxPerPage = null,
         IEnumerable<string>? select = null,
         [EnumeratorCancellation]
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         await foreach (var entity in client.QueryAsync<TableEntity>(f => f.PartitionKey == partitionKey, maxPerPage, select, cancelToken))
         {
@@ -108,7 +108,7 @@ public static class TableClientExtensions
         this TableClient client,
         object? parameters = null,
         IEnumerable<string>? select = null,
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var attr = typeof(T).GetCustomAttribute<TableKeyAttribute>();
         if (attr == null)
@@ -130,11 +130,11 @@ public static class TableClientExtensions
         string partitionKey,
         string rowKey,
         IEnumerable<string>? select = null,
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var entity = await client.GetEntityIfExistsAsync<TableEntity>(partitionKey, rowKey, select, cancelToken);
         if (entity == null || !entity.HasValue || entity.Value == null)
-            return null;
+            return default(T);
 
         T instance = new();
         instance.SetValue(entity.Value);
@@ -146,7 +146,7 @@ public static class TableClientExtensions
         this TableClient client,
         object? parameters = null,
         IEnumerable<string>? select = null,
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var attr = typeof(T).GetCustomAttribute<TableKeyAttribute>();
         if (attr == null)
@@ -168,7 +168,7 @@ public static class TableClientExtensions
         string partitionKey,
         string rowKey,
         IEnumerable<string>? select = null,
-        CancellationToken cancelToken = default) where T : JsonTableEntity, new()
+        CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var entity = await client.GetEntityAsync<TableEntity>(partitionKey, rowKey, select, cancelToken);
         if (entity == null || !entity.HasValue || entity.Value == null)
@@ -181,17 +181,20 @@ public static class TableClientExtensions
         return instance;
     }
 
-    public static async Task BulkAddAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task BulkAddAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) 
+        where T : IJsonTableEntity
         => await BulkTransactionAsync(client, TableTransactionActionType.Add, items, chunkSize, cancelToken);
 
-    public static async Task BulkUpsertReplaceAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task BulkUpsertReplaceAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) 
+        where T : IJsonTableEntity
         => await BulkTransactionAsync(client, TableTransactionActionType.UpsertReplace, items, chunkSize, cancelToken);
 
-    public static async Task BulkUpsertMergeAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) where T : JsonTableEntity
+    public static async Task BulkUpsertMergeAsync<T>(this TableClient client, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default) 
+        where T : IJsonTableEntity
         => await BulkTransactionAsync(client, TableTransactionActionType.UpsertMerge, items, chunkSize, cancelToken);
 
     private static async Task BulkTransactionAsync<T>(this TableClient client, TableTransactionActionType actionType, IEnumerable<T> items, int chunkSize = 25, CancellationToken cancelToken = default)
-        where T : JsonTableEntity
+        where T : IJsonTableEntity
     {
         if (chunkSize < 1)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be at least 1.");
