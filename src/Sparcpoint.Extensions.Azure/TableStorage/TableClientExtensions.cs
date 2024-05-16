@@ -1,5 +1,7 @@
 ﻿using SmartFormat;
+using Sparcpoint;
 using Sparcpoint.Extensions.Azure;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -60,6 +62,8 @@ public static partial class TableClientExtensions
         [EnumeratorCancellation]
         CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(filter);
+
         await foreach (var entity in client.QueryAsync<TableEntity>(filter, maxPerPage, select, cancelToken))
         {
             T instance = new();
@@ -95,7 +99,55 @@ public static partial class TableClientExtensions
         [EnumeratorCancellation]
         CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
+        Ensure.ArgumentNotNullOrWhiteSpace(partitionKey);
+
         await foreach (var entity in client.QueryAsync<TableEntity>(f => f.PartitionKey == partitionKey, maxPerPage, select, cancelToken))
+        {
+            T instance = new();
+            instance.SetValue(entity);
+
+            yield return instance;
+        }
+    }
+
+    public static async IAsyncEnumerable<T> PartitionKeyPrefixQueryAsync<T>(
+        this TableClient client,
+        string partitionKeyPrefix,
+        int? maxPerPage = null,
+        IEnumerable<string>? select = null,
+        [EnumeratorCancellation] CancellationToken cancelToken = default
+    )
+        where T : IJsonTableEntity, new()
+    {
+        Ensure.ArgumentNotNullOrWhiteSpace(partitionKeyPrefix);
+
+        var filter = TableStorageFilter.CreatePrefixRangeFilter("PartitionKey", partitionKeyPrefix);
+        await foreach (var entity in client.QueryAsync<TableEntity>(filter, maxPerPage, select, cancelToken))
+        {
+            T instance = new();
+            instance.SetValue(entity);
+
+            yield return instance;
+        }
+    }
+
+    public static async IAsyncEnumerable<T> RowKeyPrefixQueryAsync<T>(
+        this TableClient client,
+        string partitionKey,
+        string rowKeyPrefix,
+        int? maxPerPage = null,
+        IEnumerable<string>? select = null,
+        [EnumeratorCancellation] CancellationToken cancelToken = default
+    )
+        where T : IJsonTableEntity, new()
+    {
+        Ensure.ArgumentNotNullOrWhiteSpace(partitionKey);
+        Ensure.ArgumentNotNullOrWhiteSpace(rowKeyPrefix);
+
+        string rowKeyFilter = TableStorageFilter.CreatePrefixRangeFilter("RowKey", rowKeyPrefix);
+        var filter = $"PartitionKey eq '{partitionKey}' and {rowKeyFilter}";
+
+        await foreach(var entity in client.QueryAsync<TableEntity>(filter, maxPerPage, select, cancelToken))
         {
             T instance = new();
             instance.SetValue(entity);

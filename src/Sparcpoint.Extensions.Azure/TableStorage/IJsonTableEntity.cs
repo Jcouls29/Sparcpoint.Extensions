@@ -10,6 +10,6 @@ public interface IJsonTableEntity
     DateTimeOffset? Timestamp { get; set; }
     ETag ETag { get; set; }
 
-    internal ITableEntity GetValue();
-    internal void SetValue(TableEntity entity);
+    ITableEntity GetValue();
+    void SetValue(TableEntity entity);
 }
