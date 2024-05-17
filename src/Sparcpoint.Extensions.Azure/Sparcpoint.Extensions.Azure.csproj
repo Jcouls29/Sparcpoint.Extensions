@@ -27,7 +27,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
 
-    <VersionPrefix>1.6.12</VersionPrefix>
+    <VersionPrefix>1.6.13</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

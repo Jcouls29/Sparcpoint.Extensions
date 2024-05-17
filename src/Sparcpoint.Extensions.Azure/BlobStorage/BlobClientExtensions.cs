@@ -12,10 +12,16 @@ namespace Azure.Data.Tables;
 
 public static class BlobClientExtensions
 {
-    public static async Task WithLeaseAsync(this BlobClient client, Func<string, Task> action, TimeSpan? expiry = null, bool performRelease = true, CancellationToken cancellationToken = default)
+    public static async Task WithLeaseAsync(this BlobClient client, Func<string?, Task> action, TimeSpan? expiry = null, bool performRelease = true, CancellationToken cancellationToken = default)
     {
         Ensure.ArgumentNotNull(client);
         Ensure.ArgumentNotNull(action);
+
+        if (!await client.ExistsAsync())
+        {
+            await action(null);
+            return;
+        }
 
         var leaseClient = client.GetBlobLeaseClient();
         var lease = await leaseClient.AcquireAsync(expiry ?? TimeSpan.FromSeconds(15));
