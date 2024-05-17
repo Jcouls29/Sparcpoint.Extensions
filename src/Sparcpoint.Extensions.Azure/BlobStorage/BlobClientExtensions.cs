@@ -84,6 +84,16 @@ public static class BlobClientExtensions
                 },
                 
             };
+        } 
+        else if (!string.IsNullOrWhiteSpace(leaseId))
+        {
+            blobOptions = new BlobUploadOptions
+            {
+                Conditions = new BlobRequestConditions
+                {
+                    LeaseId = leaseId
+                }
+            };
         }
 
         using (var stream = new MemoryStream())
