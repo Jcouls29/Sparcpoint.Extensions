@@ -23,7 +23,10 @@ public sealed class TableKeyAttribute : Attribute
     public static TableKeyAttribute? Get<T>()
         => Get(typeof(T));
 
-    public static string? FormatPartitionKey(Type type, object value)
+    public static string? FormatPartitionKey<T>(object? parameters = null)
+        => FormatPartitionKey(typeof(T), parameters);
+
+    public static string? FormatPartitionKey(Type type, object? parameters = null)
     {
         var attr = type.GetCustomAttribute<TableKeyAttribute>();
         if (attr == null)
@@ -33,10 +36,16 @@ public sealed class TableKeyAttribute : Attribute
         if (key == null)
             return null;
 
-        return Smart.Format(key, value);
+        if (parameters == null)
+            return key;
+
+        return Smart.Format(key, parameters);
     }
 
-    public static string? FormatRowKey(Type type, object value)
+    public static string? FormatRowKey<T>(object? parameters = null)
+        => FormatRowKey(typeof(T), parameters);
+
+    public static string? FormatRowKey(Type type, object? parameters = null)
     {
         var attr = type.GetCustomAttribute<TableKeyAttribute>();
         if (attr == null)
@@ -46,6 +55,9 @@ public sealed class TableKeyAttribute : Attribute
         if (key == null)
             return null;
 
-        return Smart.Format(key, value);
+        if (parameters == null)
+            return key;
+
+        return Smart.Format(key, parameters);
     }
 }

@@ -47,7 +47,7 @@ public static class BlobContainerClientExtensions
     public static async Task<BlobContainerClient> GetContainer(this BlobServiceClient service, Type entityType, object? parameters = null)
     {
         var attr = GetKeyAttribute(entityType);
-        var containerName = attr.GetContainerName(parameters)?.ToLower() ?? throw new InvalidOperationException("Container Key is required on BlobKeyAttribute");
+        var containerName = attr.FormatContainerName(parameters)?.ToLower() ?? throw new InvalidOperationException("Container Key is required on BlobKeyAttribute");
         var client = service.GetBlobContainerClient(containerName);
         if (!await client.ExistsAsync())
         {
@@ -110,7 +110,7 @@ public static class BlobContainerClientExtensions
         var client = await GetContainer(service, entityType, parameters);
 
         var attr = GetKeyAttribute(entityType);
-        var blobName = attr.GetPathFormat(parameters);
+        var blobName = attr.FormatPath(parameters);
 
         var blob = client.GetBlobClient(blobName);
         return await action(blob);
