@@ -44,10 +44,20 @@ public static class BlobContainerClientExtensions
         }
     }
 
-    public static async Task<BlobContainerClient> GetContainer(this BlobServiceClient service, Type entityType, object? parameters = null)
+    public static async Task<BlobContainerClient> GetContainer(this BlobServiceClient service, Type entityType, params object?[] parameters)
     {
         var attr = GetKeyAttribute(entityType);
-        var containerName = attr.FormatContainerName(parameters)?.ToLower() ?? throw new InvalidOperationException("Container Key is required on BlobKeyAttribute");
+        string containerName = attr.ContainerName;
+        foreach(var p in parameters)
+        {
+            containerName = Smart.Format(containerName, p);
+        }
+
+        containerName = containerName.ToLower();
+
+        if (string.IsNullOrWhiteSpace(containerName))
+            throw new InvalidOperationException("Container Key is required on BlobKeyAttribute");
+
         var client = service.GetBlobContainerClient(containerName);
         if (!await client.ExistsAsync())
         {
@@ -85,7 +95,7 @@ public static class BlobContainerClientExtensions
 
             // No Return Required
             return 0;
-        }, parameters);
+        }, entity, parameters);
     }
 
     public static async Task<T?> FindAsync<T>(this BlobServiceClient service, object? parameters = null)
@@ -105,12 +115,20 @@ public static class BlobContainerClientExtensions
         }, parameters);
     }
 
-    private static async Task<TReturnType> WithClient<TReturnType>(this BlobServiceClient service, Type entityType, Func<BlobClient, Task<TReturnType>> action, object? parameters = null)
+    private static async Task<TReturnType> WithClient<TReturnType>(this BlobServiceClient service, Type entityType, Func<BlobClient, Task<TReturnType>> action, params object?[] parameters)
     {
         var client = await GetContainer(service, entityType, parameters);
 
         var attr = GetKeyAttribute(entityType);
-        var blobName = attr.FormatPath(parameters);
+
+        string blobName = attr.PathFormat;
+        foreach(var p in parameters)
+        {
+            if (p == null)
+                continue;
+
+            blobName = Smart.Format(blobName, p);
+        }
 
         var blob = client.GetBlobClient(blobName);
         return await action(blob);
