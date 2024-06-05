@@ -94,7 +94,8 @@ namespace Sparcpoint.Extensions.Tests.Resources
             await CreateWidget("ProjectA", "LineWidget");
             await CreateWidget("ProjectB", "ColorWidget");
 
-            var widgets = await Organization.GetChildClientsAsync<ProjectWidgetData>(maxDepth: 5).Select(c => c.GetAsync()).ToArrayAsync();
+            var widgets = await Task.WhenAll(await Organization.GetChildClientsAsync<ProjectWidgetData>(maxDepth: 5).Select(c => c.GetAsync()).ToArrayAsync());
+
             Assert.Equal(3, widgets.Count());
             Assert.Contains(widgets, w => w!.WidgetType == "TextWidget");
             Assert.Contains(widgets, w => w!.WidgetType == "LineWidget");
@@ -138,9 +139,9 @@ namespace Sparcpoint.Extensions.Tests.Resources
             await CreateWidget("ProjectA", "LineWidget");
             await CreateWidget("ProjectB", "ColorWidget");
 
-            var found = await Organization.GetChildClientsAsync<ProjectWidgetData>(project.ResourceId - Organization.ResourceId)
+            var found = await Task.WhenAll(await Organization.GetChildClientsAsync<ProjectWidgetData>(project.ResourceId - Organization.ResourceId)
                 .Select(w => w.GetAsync())
-                .ToArrayAsync();
+                .ToArrayAsync());
 
             Assert.Equal(2, found.Length);
             Assert.Contains(found, w => w!.WidgetType == "TextWidget");

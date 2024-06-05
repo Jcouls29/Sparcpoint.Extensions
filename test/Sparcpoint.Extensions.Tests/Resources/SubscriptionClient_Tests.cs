@@ -75,11 +75,11 @@ namespace Sparcpoint.Extensions.Tests.Resources
             await CreateOrganization("ORG 2");
             await CreateOrganization("ORG 3");
 
-            var found = await Subscription
+            var found = await Task.WhenAll(await Subscription
                 .GetChildClientsAsync<OrganizationData>(maxDepth)
                 .Select(async (c) => await c.GetAsync())
                 .Where(c => c != null)
-                .ToArrayAsync();
+                .ToArrayAsync());
 
             Assert.NotNull(found);
             Assert.Equal(3, found.Length);
@@ -122,7 +122,7 @@ namespace Sparcpoint.Extensions.Tests.Resources
             await CreateOrganization("ORG 2");
             await CreateOrganization("ORG 3");
 
-            var orgs = await Subscription.GetOrganizationsAsync().Select(async o => await o.GetAsync()).ToArrayAsync();
+            var orgs = await Task.WhenAll(await Subscription.GetOrganizationsAsync().Select(async o => await o.GetAsync()).ToArrayAsync());
             Assert.NotNull(orgs);
             Assert.NotEmpty(orgs);
             Assert.Contains(orgs, o => o!.DisplayName == "ORG 1");
