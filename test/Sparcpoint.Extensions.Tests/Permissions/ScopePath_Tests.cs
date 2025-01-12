@@ -46,9 +46,9 @@ public class ScopePath_Tests
     [InlineData("", "\\\\")]
     [InlineData("\\", "/")]
     [InlineData("", "")]
-    [InlineData("/ORIGINAL", "original")]
-    [InlineData("//ORIGINAL//", "\\original\\")]
-    [InlineData("/O/S/2/1/P/S", "\\o\\s/2\\1/p/s/")]
+    [InlineData("/ORIGINAL", "ORIGINAL")]
+    [InlineData("//ORIGINAL//", "\\ORIGINAL\\")]
+    [InlineData("/O/S/2/1/P/S", "\\O\\S/2\\1/P/S/")]
     public void Scopes_are_equal(string? leftPath, string? rightPath)
     {
         var leftScope = ScopePath.Parse(leftPath);
@@ -177,10 +177,10 @@ public class ScopePath_Tests
         var hierarchy = path.GetHierarchy(includeRootScope: false);
 
         Assert.Equal(4, hierarchy.Length);
-        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[0]);
-        Assert.Equal("/segment1/cool2/blue3", hierarchy[1]);
-        Assert.Equal("/segment1/cool2", hierarchy[2]);
-        Assert.Equal("/segment1", hierarchy[3]);
+        Assert.Equal("/Segment1/Cool2/Blue3/Red4", hierarchy[0]);
+        Assert.Equal("/Segment1/Cool2/Blue3", hierarchy[1]);
+        Assert.Equal("/Segment1/Cool2", hierarchy[2]);
+        Assert.Equal("/Segment1", hierarchy[3]);
     }
 
     [Fact]
@@ -190,10 +190,10 @@ public class ScopePath_Tests
         var hierarchy = path.GetHierarchy(includeRootScope: true);
 
         Assert.Equal(5, hierarchy.Length);
-        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[0]);
-        Assert.Equal("/segment1/cool2/blue3", hierarchy[1]);
-        Assert.Equal("/segment1/cool2", hierarchy[2]);
-        Assert.Equal("/segment1", hierarchy[3]);
+        Assert.Equal("/Segment1/Cool2/Blue3/Red4", hierarchy[0]);
+        Assert.Equal("/Segment1/Cool2/Blue3", hierarchy[1]);
+        Assert.Equal("/Segment1/Cool2", hierarchy[2]);
+        Assert.Equal("/Segment1", hierarchy[3]);
         Assert.Equal("/", hierarchy[4]);
     }
 
@@ -204,10 +204,10 @@ public class ScopePath_Tests
         var hierarchy = path.GetHierarchyAscending(includeRootScope: false);
 
         Assert.Equal(4, hierarchy.Length);
-        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[3]);
-        Assert.Equal("/segment1/cool2/blue3", hierarchy[2]);
-        Assert.Equal("/segment1/cool2", hierarchy[1]);
-        Assert.Equal("/segment1", hierarchy[0]);
+        Assert.Equal("/Segment1/Cool2/Blue3/Red4", hierarchy[3]);
+        Assert.Equal("/Segment1/Cool2/Blue3", hierarchy[2]);
+        Assert.Equal("/Segment1/Cool2", hierarchy[1]);
+        Assert.Equal("/Segment1", hierarchy[0]);
     }
 
     [Fact]
@@ -217,10 +217,10 @@ public class ScopePath_Tests
         var hierarchy = path.GetHierarchyAscending(includeRootScope: true);
 
         Assert.Equal(5, hierarchy.Length);
-        Assert.Equal("/segment1/cool2/blue3/red4", hierarchy[4]);
-        Assert.Equal("/segment1/cool2/blue3", hierarchy[3]);
-        Assert.Equal("/segment1/cool2", hierarchy[2]);
-        Assert.Equal("/segment1", hierarchy[1]);
+        Assert.Equal("/Segment1/Cool2/Blue3/Red4", hierarchy[4]);
+        Assert.Equal("/Segment1/Cool2/Blue3", hierarchy[3]);
+        Assert.Equal("/Segment1/Cool2", hierarchy[2]);
+        Assert.Equal("/Segment1", hierarchy[1]);
         Assert.Equal("/", hierarchy[0]);
     }
 }
