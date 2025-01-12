@@ -94,8 +94,6 @@ public readonly struct ScopePath : IEquatable<ScopePath>, IComparable<ScopePath>
             normalizePath = normalizePath.Replace(alias, ScopePathOptions.SegmentSeparator);
         }
 
-        normalizePath = normalizePath.ToLower();
-
         var split = normalizePath.Split(ScopePathOptions.SegmentSeparator).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
 
         result = new ScopePath(split);
