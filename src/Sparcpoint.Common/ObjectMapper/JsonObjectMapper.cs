@@ -46,12 +46,6 @@ public sealed class JsonObjectMapper : IObjectMapper
 
             if (p.PropertyType.IsNullable())
             {
-                if (value == null)
-                {
-                    results.Add(p.Name, null);
-                    continue;
-                }
-
                 if (value is DateOnly d)
                     results.Add(p.Name, d.ToString("o"));
                 else if (value is TimeOnly t)
@@ -90,10 +84,7 @@ public sealed class JsonObjectMapper : IObjectMapper
             }
             else if (type.IsNullable() && Nullable.GetUnderlyingType(type)!.IsBasicType())
             {
-                if (value == null)
-                    p.SetValue(result, null);
-                else
-                    p.SetValue(result, ObjectMapperHelpers.ParseBasicValue(Nullable.GetUnderlyingType(type)!, value));
+                p.SetValue(result, ObjectMapperHelpers.ParseBasicValue(Nullable.GetUnderlyingType(type)!, value));
             } 
             else
             {

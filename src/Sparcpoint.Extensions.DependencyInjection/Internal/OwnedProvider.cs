@@ -21,13 +21,21 @@ internal class OwnedProvider : IServiceProvider, IDisposable
     public object? GetService(Type serviceType)
         => _Provider?.GetService(serviceType);
 
-    internal bool IsDisposed { get; set; } = false;
+    private volatile bool _IsDisposed = false;
+    internal bool IsDisposed => _IsDisposed;
+
     public void Dispose()
     {
-        if (IsDisposed)
+        if (_IsDisposed)
             return;
 
-        (_Provider as IDisposable)?.Dispose();
-        IsDisposed = true;
+        lock (this)
+        {
+            if (_IsDisposed)
+                return;
+
+            (_Provider as IDisposable)?.Dispose();
+            _IsDisposed = true;
+        }
     }
 }
