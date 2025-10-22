@@ -17,7 +17,8 @@ internal class InMemoryObjectStore<T> : IObjectStore<T> where T : ISparcpointObj
     {
         lock (_LockObject)
         {
-            var found = _Entries.Where(x => ids.Any(i => i == x.Id)).ToArray();
+            var idSet = new HashSet<ScopePath>(ids);
+            var found = _Entries.Where(x => idSet.Contains(x.Id)).ToArray();
             foreach (var e in found)
             {
                 _Entries.Remove(e);
@@ -43,12 +44,14 @@ internal class InMemoryObjectStore<T> : IObjectStore<T> where T : ISparcpointObj
     {
         lock (_LockObject)
         {
-            var found = _Entries.Where(x => o.Any(i => i.Id == x.Id)).ToArray();
+            var objList = o.ToList();
+            var idSet = new HashSet<ScopePath>(objList.Select(i => i.Id));
+            var found = _Entries.Where(x => idSet.Contains(x.Id)).ToArray();
             foreach (var e in found)
             {
                 _Entries.Remove(e);
             }
-            _Entries.AddRange(o.Cast<ISparcpointObject>());
+            _Entries.AddRange(objList.Cast<ISparcpointObject>());
         }
 
         return Task.CompletedTask;

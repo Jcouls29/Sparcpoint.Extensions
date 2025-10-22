@@ -106,12 +106,8 @@ internal static class JsonTableEntityHelpers
             }
             else if (IsDecimal(prop))
             {
-                decimal? decValue = null;
-                if (value != null)
-                {
-                    decValue = decimal.Parse((string)value);
-                    prop.SetValue(o, decValue);
-                }
+                decimal decValue = decimal.Parse((string)value);
+                prop.SetValue(o, decValue);
             }
             else
             {
@@ -140,7 +136,6 @@ internal static class JsonTableEntityHelpers
         typeof(long),
         typeof(double),
         typeof(string),
-        typeof(double),
         typeof(DateTime),
         typeof(DateTimeOffset),
         typeof(bool),
@@ -175,7 +170,7 @@ internal static class JsonTableEntityHelpers
     }
 
     private static bool IsNonArrayByteCollection(PropertyInfo info)
-        => typeof(IEnumerable<byte>).IsAssignableFrom(info.PropertyType);
+        => info.PropertyType != typeof(byte[]) && typeof(IEnumerable<byte>).IsAssignableFrom(info.PropertyType);
 
     private static bool TryGetDecimal(PropertyInfo info, object? value, [NotNullWhen(true)] out decimal? data)
     {

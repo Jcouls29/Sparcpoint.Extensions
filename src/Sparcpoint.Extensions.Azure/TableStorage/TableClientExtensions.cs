@@ -201,7 +201,7 @@ public static partial class TableClientExtensions
         CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var entity = await client.GetEntityIfExistsAsync<TableEntity>(partitionKey, rowKey, select, cancelToken);
-        if (entity == null || !entity.HasValue || entity.Value == null)
+        if (!entity.HasValue)
             return default(T);
 
         T instance = new();
@@ -239,7 +239,7 @@ public static partial class TableClientExtensions
         CancellationToken cancelToken = default) where T : IJsonTableEntity, new()
     {
         var entity = await client.GetEntityAsync<TableEntity>(partitionKey, rowKey, select, cancelToken);
-        if (entity == null || !entity.HasValue || entity.Value == null)
+        if (!entity.HasValue)
             // TODO: Better Error
             throw new InvalidOperationException("Cannot find entity.");
 
@@ -274,7 +274,7 @@ public static partial class TableClientExtensions
         if (chunkSize < 1)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be at least 1.");
         if (chunkSize > 100)
-            throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chuck size can be no larger than 100.");
+            throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size can be no larger than 100.");
 
         var entities = items.Select(i => i.GetValue());
         var partitionedGroups = entities.GroupBy(e => e.PartitionKey);

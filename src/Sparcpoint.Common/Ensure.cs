@@ -59,7 +59,7 @@ public static class Ensure
         if (expected == null && actual == null)
             return;
 
-        if (expected == null || expected.Equals(actual))
+        if (expected != null && expected.Equals(actual))
             throw new InvalidOperationException($"{parameterName} has an invalid value.");
     }
 

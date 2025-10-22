@@ -15,36 +15,40 @@ public static partial class SparcpointServiceCollectionExtensions
         if (serviceType.IsGenericTypeDefinition)
             throw new InvalidOperationException("Open generics are not supported.");
 
-        bool hasBeenRouted = false;
+        var hasBeenRouted = 0; // 0 = false, 1 = true (for thread-safe interlocked operations)
+        var lockObject = new object();
 
         // NOTE: This approach allows for many nested coalesced providers.
         //       This should not cause any issues.
         var childServices = new ServiceCollection();
         OwnedProvider childProvider = new OwnedProvider();
 
+        // Cache reversed services to avoid repeated enumeration
+        var reversedServices = services.Reverse().ToList();
+
         Func<IServiceProvider, object> factory = (IServiceProvider provider) =>
         {
-            if (!hasBeenRouted)
+            if (Interlocked.CompareExchange(ref hasBeenRouted, 1, 0) == 0)
             {
-                // NOTE: Creates a route to the original registration
-                //       Uses transient scope to defer to the parent's
-                //       scope instead
-                foreach (var service in services.Reverse())
+                lock (lockObject)
                 {
-                    if (service.ServiceType.ContainsGenericParameters && service.ImplementationType != null)
+                    // NOTE: Creates a route to the original registration
+                    //       Uses transient scope to defer to the parent's
+                    //       scope instead
+                    foreach (var service in reversedServices)
                     {
-                        childServices.Insert(0, new ServiceDescriptor(service.ServiceType, service.ImplementationType, ServiceLifetime.Transient));
-                    } else
-                    {
-                        childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetRequiredService(service.ServiceType), ServiceLifetime.Transient));
+                        if (service.ServiceType.ContainsGenericParameters && service.ImplementationType != null)
+                        {
+                            childServices.Insert(0, new ServiceDescriptor(service.ServiceType, service.ImplementationType, ServiceLifetime.Transient));
+                        } else
+                        {
+                            childServices.Insert(0, new ServiceDescriptor(service.ServiceType, (IServiceProvider p) => provider.GetRequiredService(service.ServiceType), ServiceLifetime.Transient));
+                        }
                     }
+
+                    configure(childServices);
+                    childProvider = new OwnedProvider(childServices.BuildServiceProvider());
                 }
-
-                configure(childServices);
-                childProvider = new OwnedProvider(childServices.BuildServiceProvider());
-
-                // Should only be done once!! This prevents multiple initializations
-                hasBeenRouted = true;
             }
 
             // NOTE: Order is important here. We want to check the child

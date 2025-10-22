@@ -6,7 +6,12 @@ internal class CoalescedServiceProvider : IServiceProvider
 
     public CoalescedServiceProvider(params IServiceProvider[] ownedProviders)
     {
-        _OwnedProviders = ownedProviders?.ToArray() ?? throw new ArgumentNullException(nameof(ownedProviders));
+        if (ownedProviders == null)
+            throw new ArgumentNullException(nameof(ownedProviders));
+
+        // Avoid unnecessary array copy if already an array
+        _OwnedProviders = ownedProviders;
+
         if (_OwnedProviders.Length == 0)
             throw new ArgumentException("At least one service provider is required.", nameof(ownedProviders));
         if (_OwnedProviders.Any(s => s is null))
